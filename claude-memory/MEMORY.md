@@ -1,0 +1,5 @@
+- [User role](user_role.md) — Imperial BIOMOD team member; dry-lab/wet-lab project framing
+- [Project FLUX pivot](project_flux_pivot.md) — pivoted from I1-FFL to Fujii predator-prey replication + molecular crowding
+- [PyMOL hexokinase coursework](project_pymol_hexokinase.md) — Imperial induced-fit practical, 3O8M/3O80, prof OK'd AI use
+- [Fujii reactome](project_fujii_reactome.md) — teammate's reaction-network map of the predator-prey system (Prey Growth/Predation/Death/Fluorescence modules); ODE basis
+- [Dry-lab Step 1](project_dry_lab_step1.md) — runnable in-silico reproduction at C:\Users\KPuch\biomod-dry-lab; now paper-exact (SI eqs 3-4, measured params), validated vs SI Table S3; crowding layer next
