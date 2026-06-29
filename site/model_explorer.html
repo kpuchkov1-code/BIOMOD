@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fujii Predator-Prey Model Explorer</title>
+<style>
+  :root{
+    --prey:#4aa3ff; --pred:#ff6b6b; --cycle:#37d29a; --accent:#8b9cff;
+    --accent2:#5ad1c9;
+    --bg:#0d1119; --panel:#161d2b; --panel2:#1f2940; --card:#19212f;
+    --ink:#eef2fb; --muted:#9aa9c4; --faint:#6b7794; --line:#2a3650;
+    --ok:#37d29a; --warn:#ffcf5c;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter",-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    font-size:14px;line-height:1.55;}
+  header{padding:24px 30px 20px;
+    background:linear-gradient(180deg,#141c2c 0%,var(--bg) 100%);
+    border-bottom:1px solid var(--line);}
+  h1{margin:0 0 6px;font-size:23px;letter-spacing:-.01em;font-weight:700}
+  header .sub{margin:0;color:var(--muted);font-size:14px;max-width:1040px}
+
+  /* word + math equation block */
+  .eqcard{margin-top:16px;background:#0b1018;border:1px solid var(--line);
+    border-radius:12px;padding:14px 16px}
+  .eqrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  .eqrow+.eqrow{margin-top:11px;padding-top:12px;border-top:1px solid var(--line)}
+  .eqlhs{font-weight:700;font-size:13.5px;min-width:150px}
+  .eqeq,.op{color:var(--faint);font-weight:800;font-size:16px}
+  .term{display:inline-flex;flex-direction:column;gap:5px;padding:7px 12px;
+    border-radius:9px;background:#141c2c;border:1px solid var(--line)}
+  .term b{font-size:12px;font-weight:600;line-height:1.2}
+  .term.growth,.term.born{border-left:3px solid var(--cycle)}
+  .term.eat{border-left:3px solid var(--pred)}
+  .term.death{border-left:3px solid #8294b4}
+  /* real math styling: italic serif variables, subscripts, fraction bars */
+  .m{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;
+    font-style:italic;font-size:13.5px;color:var(--ink);
+    display:inline-flex;align-items:center;gap:1px}
+  .m sub{font-style:normal;font-size:.66em;color:var(--faint)}
+  .frac{display:inline-flex;flex-direction:column;text-align:center;
+    vertical-align:middle;margin:0 2px}
+  .frac .num{border-bottom:1.3px solid var(--faint);padding:0 7px 1px;line-height:1.35}
+  .frac .den{padding:1px 7px 0;line-height:1.35}
+
+  .wrap{display:grid;grid-template-columns:380px 1fr;align-items:start}
+  .controls{padding:22px 22px;border-right:1px solid var(--line);}
+  .plots{padding:22px 26px;display:flex;flex-direction:column;gap:14px;min-width:0}
+
+  .btns{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 16px}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;font-size:12px;cursor:pointer;
+    font-weight:500;transition:all .14s}
+  button:hover{border-color:var(--accent);background:#26314c}
+  button.primary{background:linear-gradient(135deg,var(--accent),#6f82f5);
+    border-color:transparent;color:#0d1119;font-weight:700}
+  button.primary:hover{filter:brightness(1.08)}
+
+  .group{margin-bottom:15px}
+  .group .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--accent);font-weight:700;margin-bottom:1px}
+  .group .gsub{font-size:11.5px;color:var(--faint);margin-bottom:8px}
+
+  .knob{background:var(--card);border:1px solid var(--line);border-radius:9px;
+    padding:7px 11px 8px;margin-bottom:6px;transition:border-color .14s}
+  .knob:hover{border-color:#3a486b}
+  .knob .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .knob label{font-weight:600;font-size:13px}
+  .knob label sub{font-size:.7em;color:var(--muted)}
+  .knob .val{font-variant-numeric:tabular-nums;color:var(--cycle);
+    font-size:12px;font-weight:600;background:#0b1018;padding:1px 8px;
+    border-radius:6px;border:1px solid var(--line);white-space:nowrap}
+  .knob input[type=range]{width:100%;margin:6px 0 0;accent-color:var(--accent);
+    height:4px;cursor:pointer}
+  .knob .desc{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.42}
+
+  .status{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;display:flex;gap:13px 24px;flex-wrap:wrap;align-items:center}
+  .status .metric{font-size:12.5px;color:var(--muted)}
+  .status .metric b{color:var(--ink);font-variant-numeric:tabular-nums;
+    font-weight:600;margin-left:3px}
+  .pill{padding:5px 13px;border-radius:20px;font-size:13px;font-weight:700}
+  .pill.osc{background:rgba(55,210,154,.16);color:var(--ok);
+    border:1px solid rgba(55,210,154,.5)}
+  .pill.fixed{background:rgba(255,207,92,.13);color:var(--warn);
+    border:1px solid rgba(255,207,92,.5)}
+
+  .plotgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 15px}
+  .plotcard{display:flex;flex-direction:column;min-height:0}
+  .card .ct{display:flex;justify-content:space-between;align-items:baseline;
+    margin:0 0 9px;flex-wrap:wrap;gap:4px}
+  .card .ct h3{margin:0;font-size:14px;font-weight:700}
+  .card .ct .hint,.card .ct .legend{font-size:11.5px;color:var(--faint)}
+  .legend{display:flex;gap:14px}
+  .legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .plotcard canvas{width:100%;display:block;border-radius:8px;height:300px}
+
+  .nd{font-size:12.5px;color:var(--muted);line-height:1.7}
+  .nd code{color:var(--cycle);font-variant-numeric:tabular-nums;
+    background:#0b1018;padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+  .explain h3{margin:0 0 12px;font-size:15px;color:var(--accent);font-weight:700}
+  .cycle{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-bottom:6px}
+  .step{padding:9px 13px;border-radius:10px;background:#0e1521;
+    border:1px solid var(--line);font-size:12.5px;font-weight:600;white-space:nowrap}
+  .step.prey{border-left:3px solid var(--prey)}
+  .step.pred{border-left:3px solid var(--pred)}
+  .arrow{color:var(--faint);font-size:17px;font-weight:700}
+  .arrow.loop{color:var(--accent);font-size:19px}
+  .secs{column-count:2;column-gap:34px;margin-top:14px}
+  .sec{break-inside:avoid;margin-bottom:12px}
+  .sec h4{margin:0 0 5px;font-size:13px;color:var(--accent2);font-weight:700}
+  .sec p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .sec b{color:var(--ink)}
+  .sec .k{color:var(--cycle);font-weight:600}
+
+  /* responsive fallbacks */
+  @media(max-width:1150px){
+    .plotgrid{grid-template-columns:1fr}
+    .plotcard canvas{min-height:280px}
+    .secs{column-count:1}
+  }
+  @media(max-width:920px){
+    .wrap{grid-template-columns:1fr;align-items:start}
+    .controls{border-right:none;border-bottom:1px solid var(--line)}
+    .plots{display:block}
+    .plots>*{margin-bottom:14px}
+    .plotgrid{display:block}
+    .plotcard{margin-bottom:14px}
+    .plotcard canvas{height:300px;min-height:0;flex:none}
+  }
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🦊🐰 Fujii Predator-Prey Model Explorer (dilute)</h1>
+  <p class="sub">An interactive version of the BIOMOD dry-lab model: the Fujii &amp;
+  Rondelez (2013) DNA predator-prey oscillator. Prey 🐰 breed on a template,
+  predators 🦊 eat prey and copy themselves, and an enzyme degrades both. Each
+  equation below just says <i>change = what adds, minus what removes</i>:</p>
+
+  <div class="eqcard">
+    <div class="eqrow">
+      <span class="eqlhs">🐰 Prey, change per min</span><span class="eqeq">=</span>
+      <span class="term growth"><b>＋ growth on template</b>
+        <span class="m"><span class="frac"><span class="num">k<sub>1</sub> pol G N</span><span class="den">1 + b G N</span></span></span></span>
+      <span class="op">−</span>
+      <span class="term eat"><b>eaten by predators</b>
+        <span class="m">k<sub>2</sub> pol N P</span></span>
+      <span class="op">−</span>
+      <span class="term death"><b>chewed up (death)</b>
+        <span class="m"><span class="frac"><span class="num">rec k<sub>N</sub> N</span><span class="den">1 + P/K<sub>m,P</sub></span></span></span></span>
+    </div>
+    <div class="eqrow">
+      <span class="eqlhs">🦊 Predator, change per min</span><span class="eqeq">=</span>
+      <span class="term born"><b>＋ born from eating prey</b>
+        <span class="m">k<sub>2</sub> pol N P</span></span>
+      <span class="op">−</span>
+      <span class="term death"><b>chewed up (death)</b>
+        <span class="m"><span class="frac"><span class="num">rec k<sub>P</sub> P</span><span class="den">1 + P/K<sub>m,P</sub></span></span></span></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ============ CONTROLS ============ -->
+  <div class="controls">
+    <div class="btns">
+      <button class="primary" data-preset="osc">▶ Oscillation (paper default)</button>
+      <button data-preset="low">Low template</button>
+      <button data-preset="high">High template</button>
+      <button data-preset="noexo">No exonuclease</button>
+      <button data-preset="reset">↺ Reset</button>
+    </div>
+
+    <div class="group" id="grp-main">
+      <div class="eyebrow">Main experimental knobs</div>
+      <div class="gsub">what wet lab actually pours into the tube</div>
+    </div>
+    <div class="group" id="grp-init">
+      <div class="eyebrow">Starting amounts</div>
+      <div class="gsub">where the two populations begin</div>
+    </div>
+    <div class="group" id="grp-rate">
+      <div class="eyebrow">Underlying rate constants</div>
+      <div class="gsub">fixed by the chemistry and the DNA sequences</div>
+    </div>
+  </div>
+
+  <!-- ============ PLOTS + EXPLANATION ============ -->
+  <div class="plots">
+    <div class="status">
+      <span id="state-pill" class="pill osc">...</span>
+      <span class="metric">Period:<b id="m-period">...</b></span>
+      <span class="metric">Prey range:<b id="m-prey">...</b></span>
+      <span class="metric">Predator range:<b id="m-pred">...</b></span>
+    </div>
+
+    <div class="plotgrid">
+      <div class="card plotcard">
+        <div class="ct"><h3>Populations over time</h3>
+          <span class="legend">
+            <span><i class="sw" style="background:var(--prey)"></i>Prey N</span>
+            <span><i class="sw" style="background:var(--pred)"></i>Predator P</span>
+          </span></div>
+        <canvas id="ts"></canvas>
+      </div>
+      <div class="card plotcard">
+        <div class="ct"><h3>Phase portrait</h3>
+          <span class="hint">predator vs prey &middot; loop size = wave size</span></div>
+        <canvas id="ph"></canvas>
+      </div>
+    </div>
+
+    <div class="card nd" id="nd">Nondimensional master dials: ...</div>
+
+    <div class="card explain">
+      <h3>How it oscillates</h3>
+      <div class="cycle">
+        <div class="step prey">🐰 Prey booms</div>
+        <span class="arrow">→</span>
+        <div class="step pred">🦊 Predators feast &amp; multiply</div>
+        <span class="arrow">→</span>
+        <div class="step prey">🐰 Prey crashes</div>
+        <span class="arrow">→</span>
+        <div class="step pred">🦊 Predators starve &amp; die</div>
+        <span class="arrow loop">↺</span>
+      </div>
+
+      <div class="secs">
+        <div class="sec">
+          <h4>1. The chase runs late</h4>
+          <p>Predators are slow to respond. By the time many have built up, the prey
+          has already overgrown. The predators overshoot and crash the prey too far;
+          starved, the predators crash too; then the few surviving prey boom again,
+          even higher than before. That lag turns a steady balance into an endless
+          back-and-forth chase.</p>
+        </div>
+        <div class="sec">
+          <h4>2. Why the waves grow, then settle</h4>
+          <p>A wave's size is just <b>how far the numbers swing from the calm balance
+          point</b>. We start close to that point, so the first swing is small. Each
+          cycle overshoots a little more, so the swings grow, until natural ceilings
+          cap them. On the phase portrait this is the trajectory spiralling outward to
+          its final loop.</p>
+        </div>
+        <div class="sec">
+          <h4>3. The real engine</h4>
+          <p>The killer enzyme can only work so fast. When predators are few it removes
+          a <b>big fraction</b>; when they spike they <b>swamp</b> it, so only a small
+          fraction die. A crowd of predators is protected just by being a crowd, so a
+          surge <b>feeds itself</b> instead of being corrected. That self-feeding is what
+          makes the balance unstable and the waves self-sustaining.</p>
+        </div>
+        <div class="sec">
+          <h4>4. The on/off knobs</h4>
+          <p>Template <span class="k">G</span> sets the richness: too little starves the
+          predator, too much damps to a flat line (waves live roughly 80 to 200 nM).
+          <span class="k">rec</span> and <span class="k">Km,P</span> control the
+          "safety in numbers" effect: set <span class="k">rec</span> to 0 and the waves
+          vanish. Crowding nudges exactly these knobs, which is what your study probes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- model ----------
+const DEFAULTS = {
+  G:140, pol:3.7, rec:32.5,
+  N0:10, P0:30,
+  k1:2.0e-3, b:4.8e-5, k2:3.1e-3, kN:2.1e-2, kP:4.7e-3, KmP:34
+};
+let P = {...DEFAULTS};
+
+const KNOBS = [
+ {key:'G',  group:'main', label:'Template G<sub>1</sub> (grass)', unit:'nM', min:0,max:300,step:1,
+   desc:'The main dial: how much "landscape" prey can grow on. Too low and the predator starves out (no waves); the sweet spot (about 80 to 200) gives oscillations; too high damps to a steady level.'},
+ {key:'pol',group:'main', label:'Polymerase (Bst)', unit:'nM', min:0,max:12,step:0.1,
+   desc:'The builder enzyme. Speeds up both prey growth and predation, so it sets the overall clock speed of the system.'},
+ {key:'rec',group:'main', label:'Exonuclease (ttRecJ)', unit:'nM', min:0,max:80,step:0.5,
+   desc:'The degrader, i.e. "death". Its saturation is the oscillation engine. Set it to 0 and predators never die, so the waves vanish. Likely the biggest crowding lever.'},
+
+ {key:'N0', group:'init', label:'Initial prey N<sub>0</sub>', unit:'nM', min:0,max:200,step:1,
+   desc:'Where prey starts. The system settles to the same final waves regardless, so this mostly changes the warm-up.'},
+ {key:'P0', group:'init', label:'Initial predator P<sub>0</sub>', unit:'nM', min:0,max:200,step:1,
+   desc:'Where predator starts. Try a high value to watch the phase loop shrink inward instead of growing outward.'},
+
+ {key:'k1', group:'rate', label:'k<sub>1</sub> &middot; prey growth', unit:'nM⁻²min⁻¹', min:0,max:0.005,step:0.0001,
+   desc:'How efficiently prey copy themselves on the template (built by Pol and Nic).'},
+ {key:'b',  group:'rate', label:'b &middot; growth saturation', unit:'nM⁻²', min:0,max:0.0002,step:0.000005,
+   desc:'How quickly prey growth tops out as the template and enzymes get maxed.'},
+ {key:'k2', group:'rate', label:'k<sub>2</sub> &middot; predation', unit:'nM⁻²min⁻¹', min:0,max:0.006,step:0.0001,
+   desc:'How fast predators eat prey and replicate.'},
+ {key:'kN', group:'rate', label:'k<sub>N</sub> &middot; prey decay', unit:'nM⁻¹min⁻¹', min:0,max:0.05,step:0.001,
+   desc:'How readily the exonuclease chews up prey.'},
+ {key:'kP', group:'rate', label:'k<sub>P</sub> &middot; predator decay', unit:'nM⁻¹min⁻¹', min:0,max:0.015,step:0.0002,
+   desc:'How readily the exonuclease chews up predator.'},
+ {key:'KmP',group:'rate', label:'K<sub>m,P</sub> &middot; exo saturation', unit:'nM', min:2,max:150,step:1,
+   desc:'The predator level at which the exonuclease gets overwhelmed. Lower means easier to swamp, which gives a stronger tendency to oscillate.'},
+];
+
+const PRESETS = {
+  osc:{...DEFAULTS}, low:{...DEFAULTS,G:60}, high:{...DEFAULTS,G:260},
+  noexo:{...DEFAULTS,rec:3}, reset:{...DEFAULTS},
+};
+
+function deriv(N,Pr,p){
+  const sat = 1 + Pr/p.KmP;
+  const growth = p.k1*p.pol*p.G*N/(1 + p.b*p.G*N);
+  const predation = p.k2*p.pol*N*Pr;
+  const dN = growth - predation - p.rec*p.kN*N/sat;
+  const dP = predation - p.rec*p.kP*Pr/sat;
+  return [dN,dP];
+}
+
+function simulate(p){
+  const dt=0.012, T=1800, steps=Math.round(T/dt), CAP=1e6;
+  let N=p.N0, Pr=p.P0, blew=false;
+  const keep=Math.max(1,Math.floor(steps/1500));
+  const ts=[],Ns=[],Ps=[];
+  for(let i=0;i<=steps;i++){
+    if(i%keep===0){ts.push(i*dt);Ns.push(N);Ps.push(Pr);}
+    const a=deriv(N,Pr,p);
+    const b=deriv(N+0.5*dt*a[0],Pr+0.5*dt*a[1],p);
+    const c=deriv(N+0.5*dt*b[0],Pr+0.5*dt*b[1],p);
+    const d=deriv(N+dt*c[0],Pr+dt*c[1],p);
+    N += dt/6*(a[0]+2*b[0]+2*c[0]+d[0]);
+    Pr+= dt/6*(a[1]+2*b[1]+2*c[1]+d[1]);
+    if(N<0)N=0; if(Pr<0)Pr=0;
+    if(!isFinite(N)||!isFinite(Pr)||N>CAP||Pr>CAP){ blew=true; break; }
+  }
+  return {ts,Ns,Ps,T,blew};
+}
+
+// ---------- helpers ----------
+function safeMax(arr){let m=0;for(const x of arr){if(isFinite(x)&&x>m)m=x;}return m;}
+function safeMin(arr){let m=Infinity;for(const x of arr){if(isFinite(x)&&x<m)m=x;}return isFinite(m)?m:0;}
+
+function analyse(sim){
+  const {ts,Ns,Ps}=sim;
+  const t0=ts[ts.length-1]*0.5;
+  const idx=ts.findIndex(t=>t>=t0);
+  const tailT=ts.slice(idx), tailN=Ns.slice(idx), tailP=Ps.slice(idx);
+  const pMin=safeMin(tailP), pMax=safeMax(tailP);
+  const nMin=safeMin(tailN), nMax=safeMax(tailN);
+  const peaks=[];
+  const mean=tailP.reduce((s,x)=>s+x,0)/tailP.length;
+  for(let i=1;i<tailP.length-1;i++)
+    if(tailP[i]>tailP[i-1]&&tailP[i]>tailP[i+1]&&tailP[i]>mean) peaks.push(tailT[i]);
+  let period=null;
+  if(peaks.length>=2){
+    let d=0; for(let i=1;i<peaks.length;i++) d+=peaks[i]-peaks[i-1];
+    period=d/(peaks.length-1);
+  }
+  const amp=pMax-pMin;
+  const oscillating = amp>1 && (pMax>0?amp/pMax>0.03:false) && peaks.length>=2;
+  return {period,oscillating,nMin,nMax,pMin,pMax};
+}
+
+function nondim(p){
+  if(p.k1<=0||p.pol<=0||p.k2<=0||p.KmP<=0) return null;
+  return {
+    G0:p.k2*p.KmP/p.k1, tc:1/(p.k2*p.pol*p.KmP),
+    beta:p.b*p.k2*p.KmP*p.KmP/p.k1, lam:p.kN/p.kP,
+    delta:(p.rec/p.pol)*(p.kP/(p.k2*p.KmP)), g:(p.G)/(p.k2*p.KmP/p.k1),
+  };
+}
+
+// ---------- plotting ----------
+const GRID='#243150', AXIS='#8294b4', PANEL='#0e1521';
+function setupCanvas(cv){
+  const ratio=window.devicePixelRatio||1;
+  const w=cv.clientWidth, h=cv.clientHeight;
+  cv.width=Math.round(w*ratio); cv.height=Math.round(h*ratio);
+  const ctx=cv.getContext('2d'); ctx.setTransform(ratio,0,0,ratio,0,0);
+  return {ctx,w,h};
+}
+function niceMax(v){ if(!isFinite(v)||v<=0)return 1;
+  const p=Math.pow(10,Math.floor(Math.log10(v)));
+  const n=v/p; const m=n<=1?1:n<=2?2:n<=5?5:10; return m*p; }
+function bg(ctx,m,pw,ph){ ctx.fillStyle=PANEL; ctx.fillRect(m.l,m.t,pw,ph); }
+
+function plotTime(cv,sim){
+  const {ctx,w,h}=setupCanvas(cv);
+  const m={l:46,r:14,t:10,b:32};
+  const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const xMax=sim.T;
+  const yMax=niceMax(Math.max(safeMax(sim.Ns),safeMax(sim.Ps))*1.1);
+  const X=t=>m.l+pw*t/xMax, Y=v=>m.t+ph*(1-v/yMax);
+  ctx.clearRect(0,0,w,h); bg(ctx,m,pw,ph);
+  ctx.font='11px Inter,sans-serif'; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const v=yMax*i/5, y=Y(v);
+    ctx.strokeStyle=GRID; ctx.beginPath(); ctx.moveTo(m.l,y); ctx.lineTo(w-m.r,y); ctx.stroke();
+    ctx.fillStyle=AXIS; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(v.toFixed(0),m.l-6,y);
+  }
+  ctx.textBaseline='alphabetic';
+  for(let i=0;i<=6;i++){ const t=xMax*i/6, x=X(t);
+    ctx.fillStyle=AXIS; ctx.textAlign='center'; ctx.fillText(t.toFixed(0),x,h-12); }
+  ctx.fillStyle=AXIS; ctx.textAlign='center'; ctx.fillText('time (min)',m.l+pw/2,h-1);
+  ctx.save(); ctx.translate(12,m.t+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('concentration (nM)',0,0); ctx.restore();
+  const line=(arr,col)=>{ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.lineJoin='round';
+    ctx.beginPath();
+    sim.ts.forEach((t,i)=>{const x=X(t),y=Y(arr[i]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.stroke();};
+  line(sim.Ns,'#4aa3ff'); line(sim.Ps,'#ff6b6b');
+}
+
+function plotPhase(cv,sim){
+  const {ctx,w,h}=setupCanvas(cv);
+  const m={l:48,r:14,t:10,b:34};
+  const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const xMax=niceMax(safeMax(sim.Ns)*1.1);
+  const yMax=niceMax(safeMax(sim.Ps)*1.1);
+  const X=v=>m.l+pw*v/xMax, Y=v=>m.t+ph*(1-v/yMax);
+  ctx.clearRect(0,0,w,h); bg(ctx,m,pw,ph);
+  ctx.font='11px Inter,sans-serif'; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const v=yMax*i/5,y=Y(v); ctx.strokeStyle=GRID; ctx.beginPath();
+    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();
+    ctx.fillStyle=AXIS;ctx.textAlign='right';ctx.textBaseline='middle';
+    ctx.fillText(v.toFixed(0),m.l-6,y);
+  }
+  ctx.textBaseline='alphabetic';
+  for(let i=0;i<=5;i++){ const v=xMax*i/5,x=X(v);
+    ctx.fillStyle=AXIS;ctx.textAlign='center'; ctx.fillText(v.toFixed(0),x,h-14); }
+  ctx.fillStyle=AXIS; ctx.textAlign='center'; ctx.fillText('Prey N (nM)',m.l+pw/2,h-1);
+  ctx.save(); ctx.translate(12,m.t+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Predator P (nM)',0,0); ctx.restore();
+  const n=sim.Ns.length; ctx.lineWidth=1.3; ctx.lineJoin='round';
+  for(let i=1;i<n;i++){
+    const a=0.12+0.88*(i/n);
+    ctx.strokeStyle='rgba(55,210,154,'+a.toFixed(3)+')';
+    ctx.beginPath();
+    ctx.moveTo(X(sim.Ns[i-1]),Y(sim.Ps[i-1]));
+    ctx.lineTo(X(sim.Ns[i]),Y(sim.Ps[i]));
+    ctx.stroke();
+  }
+  ctx.fillStyle='#eef2fb'; ctx.beginPath();
+  ctx.arc(X(sim.Ns[0]),Y(sim.Ps[0]),4,0,7); ctx.fill();
+  ctx.fillStyle=AXIS; ctx.textAlign='left';
+  ctx.fillText('start',X(sim.Ns[0])+7,Y(sim.Ps[0])+3);
+}
+
+// ---------- UI ----------
+function fmt(key,v){
+  if(['k1','b','k2','kN','kP'].includes(key)) return v.toExponential(2);
+  return (Math.abs(v)>=10?v.toFixed(0):v.toFixed(1));
+}
+function buildKnobs(){
+  KNOBS.forEach(k=>{
+    const box=document.getElementById('grp-'+k.group);
+    const d=document.createElement('div'); d.className='knob';
+    d.innerHTML=`<div class="top"><label>${k.label}</label>
+      <span class="val" id="v-${k.key}"></span></div>
+      <input type="range" id="s-${k.key}" min="${k.min}" max="${k.max}" step="${k.step}">
+      <div class="desc">${k.desc}</div>`;
+    box.appendChild(d);
+    const s=d.querySelector('input');
+    s.addEventListener('input',()=>{P[k.key]=parseFloat(s.value);
+      document.getElementById('v-'+k.key).textContent=fmt(k.key,P[k.key])+' '+k.unit;
+      requestUpdate();});
+  });
+}
+function syncKnobs(){
+  KNOBS.forEach(k=>{
+    document.getElementById('s-'+k.key).value=P[k.key];
+    document.getElementById('v-'+k.key).textContent=fmt(k.key,P[k.key])+' '+k.unit;
+  });
+}
+
+let dirty=true;
+function requestUpdate(){dirty=true;}
+function loop(){
+  if(dirty){dirty=false; try{render();}catch(e){console.error(e);}}
+  requestAnimationFrame(loop);
+}
+function render(){
+  const sim=simulate(P);
+  plotTime(document.getElementById('ts'),sim);
+  plotPhase(document.getElementById('ph'),sim);
+  const a=analyse(sim);
+  const pill=document.getElementById('state-pill');
+  if(sim.blew){pill.className='pill fixed'; pill.textContent='Unstable / out of range';}
+  else if(a.oscillating){pill.className='pill osc'; pill.textContent='Oscillating';}
+  else{pill.className='pill fixed'; pill.textContent='Steady state (no waves)';}
+  document.getElementById('m-period').textContent=a.period?a.period.toFixed(0)+' min':'none';
+  document.getElementById('m-prey').textContent=a.nMin.toFixed(1)+' to '+a.nMax.toFixed(1)+' nM';
+  document.getElementById('m-pred').textContent=a.pMin.toFixed(1)+' to '+a.pMax.toFixed(1)+' nM';
+  const nd=nondim(P);
+  const el=document.getElementById('nd');
+  if(nd){
+    el.innerHTML=`<b style="color:var(--ink)">Nondimensional master dials</b> `+
+      `(the paper's 3 core knobs, target g&asymp;2.7, &lambda;=4.5, &delta;=0.39): `+
+      `richness g = <code>${nd.g.toFixed(2)}</code> &nbsp; `+
+      `decay ratio &lambda; = <code>${nd.lam.toFixed(2)}</code> &nbsp; `+
+      `predator decay &delta; = <code>${nd.delta.toFixed(2)}</code> &nbsp; `+
+      `&beta; = <code>${nd.beta.toFixed(3)}</code>`;
+  } else el.innerHTML='<b style="color:var(--ink)">Nondimensional master dials</b> unavailable (a rate is set to zero).';
+}
+
+document.querySelectorAll('button[data-preset]').forEach(b=>{
+  b.addEventListener('click',()=>{P={...PRESETS[b.dataset.preset]}; syncKnobs(); requestUpdate();});
+});
+window.addEventListener('resize',requestUpdate);
+
+buildKnobs(); syncKnobs(); loop();
+</script>
+</body>
+</html>

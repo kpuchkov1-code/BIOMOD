@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crowded Fujii Model (BIOMOD novelty)</title>
+<style>
+  :root{
+    --prey:#4aa3ff; --pred:#ff6b6b; --cycle:#37d29a; --accent:#8b9cff;
+    --accent2:#5ad1c9; --crowd:#f5a76b;
+    --bg:#0d1119; --panel:#161d2b; --panel2:#1f2940; --card:#19212f;
+    --ink:#eef2fb; --muted:#9aa9c4; --faint:#6b7794; --line:#2a3650;
+    --ok:#37d29a; --warn:#ffcf5c;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-font-smoothing:antialiased}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter",-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    font-size:14px;line-height:1.55;}
+  header{padding:24px 30px 20px;
+    background:linear-gradient(180deg,#141c2c 0%,var(--bg) 100%);
+    border-bottom:1px solid var(--line);}
+  h1{margin:0 0 6px;font-size:23px;letter-spacing:-.01em;font-weight:700}
+  header .sub{margin:0;color:var(--muted);font-size:14px;max-width:1040px}
+
+  /* tug-of-war mapping */
+  .map{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .mrow{display:flex;align-items:center;gap:9px;background:#0b1018;
+    border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-size:12.5px}
+  .mrow .eff{font-weight:700}
+  .mrow .up{color:var(--cycle)} .mrow .down{color:var(--pred)}
+  .mrow .arr{color:var(--faint);font-weight:700}
+  .mrow code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;
+    color:var(--ink);background:#141c2c;padding:1px 6px;border-radius:5px;
+    border:1px solid var(--line)}
+
+  .wrap{display:grid;grid-template-columns:380px 1fr;align-items:start}
+  @media(max-width:920px){.wrap{grid-template-columns:1fr}}
+  .controls{padding:22px 22px;border-right:1px solid var(--line);}
+  .plots{padding:22px 26px;display:flex;flex-direction:column;gap:14px;min-width:0}
+
+  .btns{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+  button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;font-size:12px;cursor:pointer;
+    font-weight:500;transition:all .14s}
+  button:hover{border-color:var(--accent);background:#26314c}
+  button.primary{background:linear-gradient(135deg,var(--crowd),#e8895a);
+    border-color:transparent;color:#0d1119;font-weight:700}
+
+  .group{margin-bottom:15px}
+  .group .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;
+    color:var(--accent);font-weight:700;margin-bottom:1px}
+  .group.crowd .eyebrow{color:var(--crowd)}
+  .group .gsub{font-size:11.5px;color:var(--faint);margin-bottom:8px}
+
+  .knob{background:var(--card);border:1px solid var(--line);border-radius:9px;
+    padding:7px 11px 8px;margin-bottom:6px;transition:border-color .14s}
+  .knob.master{border-color:var(--crowd);background:#221a14}
+  .knob:hover{border-color:#3a486b}
+  .knob .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .knob label{font-weight:600;font-size:13px}
+  .knob label sub{font-size:.7em;color:var(--muted)}
+  .knob .val{font-variant-numeric:tabular-nums;color:var(--cycle);
+    font-size:12px;font-weight:600;background:#0b1018;padding:1px 8px;
+    border-radius:6px;border:1px solid var(--line);white-space:nowrap}
+  .knob.master .val{color:var(--crowd)}
+  .knob input[type=range]{width:100%;margin:6px 0 0;accent-color:var(--accent);
+    height:4px;cursor:pointer}
+  .knob.master input[type=range]{accent-color:var(--crowd)}
+  .knob .desc{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.42}
+
+  .status{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;display:flex;gap:13px 22px;flex-wrap:wrap;align-items:center}
+  .status .metric{font-size:12.5px;color:var(--muted)}
+  .status .metric b{color:var(--ink);font-variant-numeric:tabular-nums;
+    font-weight:600;margin-left:3px}
+  .status .delta{font-size:11px;color:var(--faint);margin-left:3px}
+  .pill{padding:5px 13px;border-radius:20px;font-size:13px;font-weight:700}
+  .pill.osc{background:rgba(55,210,154,.16);color:var(--ok);
+    border:1px solid rgba(55,210,154,.5)}
+  .pill.fixed{background:rgba(255,207,92,.13);color:var(--warn);
+    border:1px solid rgba(255,207,92,.5)}
+
+  .plotgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:1150px){.plotgrid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 15px}
+  .card .ct{display:flex;justify-content:space-between;align-items:baseline;
+    margin:0 0 9px;flex-wrap:wrap;gap:4px}
+  .card .ct h3{margin:0;font-size:14px;font-weight:700}
+  .card .ct .hint,.card .ct .legend{font-size:11.5px;color:var(--faint)}
+  .legend{display:flex;gap:14px}
+  .legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  canvas{width:100%;display:block;border-radius:8px;height:300px}
+  #sweep{height:330px}
+
+  .effbox{font-size:12px;color:var(--muted);line-height:1.8}
+  .effbox code{color:var(--cycle);font-variant-numeric:tabular-nums;
+    background:#0b1018;padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+  .effbox .dn{color:var(--pred)} .effbox .upx{color:var(--cycle)}
+
+  .explain h3{margin:0 0 10px;font-size:15px;color:var(--accent);font-weight:700}
+  .secs{column-count:2;column-gap:34px}
+  @media(max-width:1150px){.secs{column-count:1}}
+  .sec{break-inside:avoid;margin-bottom:12px}
+  .sec h4{margin:0 0 5px;font-size:13px;color:var(--accent2);font-weight:700}
+  .sec p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .sec b{color:var(--ink)} .sec .k{color:var(--crowd);font-weight:600}
+  .warnote{background:rgba(255,207,92,.08);border:1px solid rgba(255,207,92,.35);
+    border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--warn);
+    margin-top:4px}
+  .warnote b{color:#ffe6a6}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧪🦊🐰 Crowded Predator-Prey Model</h1>
+  <p class="sub">Your team's contribution: pack the tube full of an inert crowder
+  (PEG, Ficoll, dextran) and ask how it changes the oscillation. Crowding does not
+  add new species or equations; it <b>re-scales the existing rate constants</b>. Two
+  effects pull in opposite directions, and which one wins is the question your model
+  is built to predict before wet lab tests it.</p>
+
+  <div class="map">
+    <div class="mrow"><span class="eff up">Excluded volume</span><span class="arr">→</span>
+      tighter binding / faster association <span class="up">↑</span>
+      <code>k₁</code><code>k₂</code><code>b</code> up, <code>Km,P</code> down</div>
+    <div class="mrow"><span class="eff down">Viscosity</span><span class="arr">→</span>
+      slower diffusion <span class="down">↓</span> <code>k₁</code><code>k₂</code> down</div>
+    <div class="mrow"><span class="eff">Enzyme shift</span><span class="arr">→</span>
+      Pol &amp; Exo turnover change <code>k₁</code><code>k₂</code><code>k_N</code><code>k_P</code></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ============ CONTROLS ============ -->
+  <div class="controls">
+    <div class="btns">
+      <button class="primary" data-preset="peg">PEG 8000</button>
+      <button data-preset="ficoll">Ficoll 400</button>
+      <button data-preset="dextran">Dextran</button>
+      <button data-preset="none">No crowder</button>
+    </div>
+
+    <div class="group crowd" id="grp-crowd">
+      <div class="eyebrow">Crowder</div>
+      <div class="gsub">the master experimental variable (x-axis of your study)</div>
+    </div>
+    <div class="group" id="grp-base">
+      <div class="eyebrow">Baseline setup</div>
+      <div class="gsub">the dilute system the crowder acts on</div>
+    </div>
+    <div class="group" id="grp-eff">
+      <div class="eyebrow">Crowding effect strengths</div>
+      <div class="gsub">hypotheses: how strongly C moves each rate (per unit fraction)</div>
+    </div>
+  </div>
+
+  <!-- ============ PLOTS ============ -->
+  <div class="plots">
+    <div class="status">
+      <span id="state-pill" class="pill osc">...</span>
+      <span class="metric">Period:<b id="m-period">...</b><span class="delta" id="d-period"></span></span>
+      <span class="metric">Predator amplitude:<b id="m-amp">...</b><span class="delta" id="d-amp"></span></span>
+    </div>
+
+    <div class="plotgrid">
+      <div class="card">
+        <div class="ct"><h3>Populations over time</h3>
+          <span class="legend">
+            <span><i class="sw" style="background:var(--prey)"></i>Prey</span>
+            <span><i class="sw" style="background:var(--pred)"></i>Predator</span>
+            <span><i class="sw" style="background:#5a6b8a"></i>dilute (C=0)</span>
+          </span></div>
+        <canvas id="ts"></canvas>
+      </div>
+      <div class="card">
+        <div class="ct"><h3>Phase portrait</h3>
+          <span class="hint">crowded (green) vs dilute (grey)</span></div>
+        <canvas id="ph"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct"><h3>⭐ Prediction: sweep crowder concentration C</h3>
+        <span class="legend">
+          <span><i class="sw" style="background:var(--cycle)"></i>amplitude</span>
+          <span><i class="sw" style="background:var(--accent)"></i>period</span>
+          <span><i class="sw" style="background:rgba(246,167,107,.5)"></i>oscillating</span>
+        </span></div>
+      <canvas id="sweep"></canvas>
+      <div class="hint" id="sweep-note" style="margin-top:8px;color:var(--faint);font-size:12px"></div>
+    </div>
+
+    <div class="card effbox" id="eff-readout">Effective rate constants: ...</div>
+
+    <div class="card explain">
+      <h3>What this page is saying</h3>
+      <div class="secs">
+        <div class="sec">
+          <h4>Crowding re-scales the knobs</h4>
+          <p>Every rate constant becomes a function of crowder fraction C. Excluded
+          volume makes molecules act more concentrated, so binding and association
+          speed up (<span class="k">k₁, k₂</span> up, <span class="k">Km,P</span>
+          down). Viscosity slows diffusion, dragging the same association rates back
+          down. Crowding also shifts the polymerase and exonuclease turnover.</p>
+        </div>
+        <div class="sec">
+          <h4>The tug-of-war</h4>
+          <p>Excluded volume speeds reactions up; viscosity slows them down. They push
+          the period in opposite directions, so the net effect is <b>not obvious in
+          advance</b>. That is exactly why a model is worth building: it turns your
+          assumed effect strengths into a concrete, testable curve.</p>
+        </div>
+        <div class="sec">
+          <h4>The strongest possible result</h4>
+          <p>Watch the sweep plot. If raising C carries the amplitude across zero, then
+          crowding <b>switches the oscillation on or off</b> (it crosses the Hopf
+          boundary). Showing that crowding alone can start or stop the rhythm is the
+          cleanest, most striking claim you can make, and it is fully falsifiable.</p>
+        </div>
+        <div class="sec">
+          <h4>Be honest about the unknowns</h4>
+          <p>The effect-strength sliders are <b>hypotheses</b>, not measured values.
+          The biggest unknown is how crowding affects the exonuclease (ttRecJ), since
+          the oscillation hinges on it. Wet lab measures these by running the enzyme
+          assays in crowder; this model just shows what each assumption predicts.</p>
+        </div>
+      </div>
+      <div class="warnote">⚠ <b>Defaults are illustrative.</b> Replace the effect
+      strengths with values fitted to crowding literature or your own calibration runs
+      before treating any curve as a real prediction.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- dilute baseline (paper PP1) ----------
+const BASE = { G:140, pol:3.7, rec:32.5, N0:10, P0:30,
+  k1:2.0e-3, b:4.8e-5, k2:3.1e-3, kN:2.1e-2, kP:4.7e-3, KmP:34 };
+let Pbase = {G:BASE.G, pol:BASE.pol, rec:BASE.rec};   // adjustable baseline
+let C = 12;   // crowder, % w/v
+// effect strengths (slopes acting on fraction Cf = C/100)
+let EFF = { bind:2.5, visc:1.5, polk:-0.6, exok:-1.2, km:1.2 };
+
+const PRESETS = {
+  peg:    {C:15, bind:2.8, visc:2.0, polk:-0.8, exok:-1.4, km:1.4},
+  ficoll: {C:15, bind:2.5, visc:1.0, polk:-0.3, exok:-0.8, km:1.2},
+  dextran:{C:15, bind:2.2, visc:1.4, polk:-0.4, exok:-1.0, km:1.0},
+  none:   {C:0,  bind:0,   visc:0,   polk:0,    exok:0,    km:0},
+};
+
+// ---------- the crowding model: rate constants as functions of C ----------
+function crowded(Cpct){
+  const Cf = Cpct/100;
+  const B  = Math.exp(EFF.bind*Cf);     // excluded volume / duplex stabilization (binding up)
+  const V  = Math.exp(-EFF.visc*Cf);    // viscosity slows diffusion-limited association
+  const Pp = Math.max(0, 1 + EFF.polk*Cf); // polymerase turnover change
+  const Ex = Math.max(0, 1 + EFF.exok*Cf); // exonuclease turnover change
+  const Km = Math.exp(-EFF.km*Cf);      // tighter duplex -> lower Km
+  return {
+    G:Pbase.G, pol:Pbase.pol, rec:Pbase.rec, N0:BASE.N0, P0:BASE.P0,
+    k1: BASE.k1 * B * V * Pp,
+    k2: BASE.k2 * B * V * Pp,
+    b : BASE.b  * B,
+    kN: BASE.kN * Ex,
+    kP: BASE.kP * Ex,
+    KmP: BASE.KmP * Km,
+    _f:{B,V,Pp,Ex,Km}
+  };
+}
+function diluteParams(){ return {G:Pbase.G,pol:Pbase.pol,rec:Pbase.rec,N0:BASE.N0,P0:BASE.P0,
+  k1:BASE.k1,b:BASE.b,k2:BASE.k2,kN:BASE.kN,kP:BASE.kP,KmP:BASE.KmP}; }
+
+// ---------- ODE ----------
+function deriv(N,Pr,p){
+  const sat=1+Pr/p.KmP;
+  const growth=p.k1*p.pol*p.G*N/(1+p.b*p.G*N);
+  const predation=p.k2*p.pol*N*Pr;
+  return [growth - predation - p.rec*p.kN*N/sat, predation - p.rec*p.kP*Pr/sat];
+}
+function simulate(p,dt,T){
+  dt=dt||0.012; T=T||1800;
+  const steps=Math.round(T/dt), CAP=1e6;
+  let N=p.N0,Pr=p.P0,blew=false;
+  const keep=Math.max(1,Math.floor(steps/1400));
+  const ts=[],Ns=[],Ps=[];
+  for(let i=0;i<=steps;i++){
+    if(i%keep===0){ts.push(i*dt);Ns.push(N);Ps.push(Pr);}
+    const a=deriv(N,Pr,p);
+    const b=deriv(N+0.5*dt*a[0],Pr+0.5*dt*a[1],p);
+    const c=deriv(N+0.5*dt*b[0],Pr+0.5*dt*b[1],p);
+    const d=deriv(N+dt*c[0],Pr+dt*c[1],p);
+    N+=dt/6*(a[0]+2*b[0]+2*c[0]+d[0]); Pr+=dt/6*(a[1]+2*b[1]+2*c[1]+d[1]);
+    if(N<0)N=0; if(Pr<0)Pr=0;
+    if(!isFinite(N)||!isFinite(Pr)||N>CAP||Pr>CAP){blew=true;break;}
+  }
+  return {ts,Ns,Ps,T,blew};
+}
+function safeMax(a){let m=0;for(const x of a)if(isFinite(x)&&x>m)m=x;return m;}
+function safeMin(a){let m=Infinity;for(const x of a)if(isFinite(x)&&x<m)m=x;return isFinite(m)?m:0;}
+function analyse(sim){
+  const {ts,Ns,Ps}=sim, t0=ts[ts.length-1]*0.5, idx=ts.findIndex(t=>t>=t0);
+  const tT=ts.slice(idx),tP=Ps.slice(idx),tN=Ns.slice(idx);
+  const pMin=safeMin(tP),pMax=safeMax(tP), nMin=safeMin(tN),nMax=safeMax(tN);
+  const mean=tP.reduce((s,x)=>s+x,0)/tP.length, peaks=[];
+  for(let i=1;i<tP.length-1;i++) if(tP[i]>tP[i-1]&&tP[i]>tP[i+1]&&tP[i]>mean) peaks.push(tT[i]);
+  let period=null;
+  if(peaks.length>=2){let d=0;for(let i=1;i<peaks.length;i++)d+=peaks[i]-peaks[i-1];period=d/(peaks.length-1);}
+  const amp=pMax-pMin, osc=amp>1&&(pMax>0?amp/pMax>0.03:false)&&peaks.length>=2;
+  return {period,amp,osc,nMin,nMax,pMin,pMax};
+}
+
+// ---------- plotting ----------
+const GRID='#243150', AXIS='#8294b4', PANEL='#0e1521';
+function setup(cv){const r=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  cv.width=Math.round(w*r);cv.height=Math.round(h*r);const c=cv.getContext('2d');
+  c.setTransform(r,0,0,r,0,0);return{ctx:c,w,h};}
+function niceMax(v){if(!isFinite(v)||v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));
+  const n=v/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p;}
+
+function plotTime(cv,sim,dil){
+  const {ctx,w,h}=setup(cv), m={l:46,r:14,t:10,b:32}, pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const xMax=sim.T, yMax=niceMax(Math.max(safeMax(sim.Ns),safeMax(sim.Ps),safeMax(dil.Ps))*1.1);
+  const X=t=>m.l+pw*t/xMax, Y=v=>m.t+ph*(1-v/yMax);
+  ctx.clearRect(0,0,w,h); ctx.fillStyle=PANEL; ctx.fillRect(m.l,m.t,pw,ph);
+  ctx.font='11px Inter,sans-serif';
+  for(let i=0;i<=5;i++){const v=yMax*i/5,y=Y(v);ctx.strokeStyle=GRID;ctx.beginPath();
+    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.fillStyle=AXIS;
+    ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(v.toFixed(0),m.l-6,y);}
+  ctx.textBaseline='alphabetic';
+  for(let i=0;i<=6;i++){const t=xMax*i/6,x=X(t);ctx.fillStyle=AXIS;ctx.textAlign='center';
+    ctx.fillText(t.toFixed(0),x,h-12);}
+  ctx.fillStyle=AXIS;ctx.textAlign='center';ctx.fillText('time (min)',m.l+pw/2,h-1);
+  ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('concentration (nM)',0,0);ctx.restore();
+  // dilute predator reference (faint dashed)
+  ctx.setLineDash([4,4]); ctx.strokeStyle='#5a6b8a'; ctx.lineWidth=1.2; ctx.beginPath();
+  dil.ts.forEach((t,i)=>{const x=X(t),y=Y(dil.Ps[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.stroke(); ctx.setLineDash([]);
+  const line=(arr,col)=>{ctx.strokeStyle=col;ctx.lineWidth=1.9;ctx.lineJoin='round';ctx.beginPath();
+    sim.ts.forEach((t,i)=>{const x=X(t),y=Y(arr[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();};
+  line(sim.Ns,'#4aa3ff'); line(sim.Ps,'#ff6b6b');
+}
+
+function plotPhase(cv,sim,dil){
+  const {ctx,w,h}=setup(cv), m={l:48,r:14,t:10,b:34}, pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const xMax=niceMax(Math.max(safeMax(sim.Ns),safeMax(dil.Ns))*1.1);
+  const yMax=niceMax(Math.max(safeMax(sim.Ps),safeMax(dil.Ps))*1.1);
+  const X=v=>m.l+pw*v/xMax, Y=v=>m.t+ph*(1-v/yMax);
+  ctx.clearRect(0,0,w,h); ctx.fillStyle=PANEL; ctx.fillRect(m.l,m.t,pw,ph);
+  ctx.font='11px Inter,sans-serif';
+  for(let i=0;i<=5;i++){const v=yMax*i/5,y=Y(v);ctx.strokeStyle=GRID;ctx.beginPath();
+    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.fillStyle=AXIS;
+    ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(v.toFixed(0),m.l-6,y);}
+  ctx.textBaseline='alphabetic';
+  for(let i=0;i<=5;i++){const v=xMax*i/5,x=X(v);ctx.fillStyle=AXIS;ctx.textAlign='center';
+    ctx.fillText(v.toFixed(0),x,h-14);}
+  ctx.fillStyle=AXIS;ctx.textAlign='center';ctx.fillText('Prey N (nM)',m.l+pw/2,h-1);
+  ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('Predator P (nM)',0,0);ctx.restore();
+  const draw=(s,col,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineJoin='round';ctx.beginPath();
+    s.Ns.forEach((n,i)=>{const x=X(n),y=Y(s.Ps[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();};
+  draw(dil,'rgba(120,140,175,.55)',1.1);     // dilute reference
+  draw(sim,'rgba(55,210,154,.95)',1.4);      // crowded
+}
+
+function plotSweep(cv,sw,Cmax){
+  const {ctx,w,h}=setup(cv), m={l:46,r:48,t:12,b:34}, pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const aMax=niceMax(safeMax(sw.map(d=>d.amp))*1.1);
+  const tMax=niceMax(safeMax(sw.map(d=>d.period||0))*1.1);
+  const X=c=>m.l+pw*c/Cmax, YA=v=>m.t+ph*(1-v/aMax), YT=v=>m.t+ph*(1-v/tMax);
+  ctx.clearRect(0,0,w,h); ctx.fillStyle=PANEL; ctx.fillRect(m.l,m.t,pw,ph);
+  // shade oscillating C bands
+  ctx.fillStyle='rgba(246,167,107,.16)';
+  sw.forEach((d,i)=>{ if(d.osc){ const x0=X(i>0?(sw[i-1].C+d.C)/2:d.C);
+    const x1=X(i<sw.length-1?(sw[i+1].C+d.C)/2:d.C); ctx.fillRect(x0,m.t,Math.max(1,x1-x0),ph);} });
+  ctx.font='11px Inter,sans-serif';
+  for(let i=0;i<=5;i++){const y=m.t+ph*i/5; ctx.strokeStyle=GRID;ctx.beginPath();
+    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();
+    ctx.fillStyle='#37d29a';ctx.textAlign='right';ctx.textBaseline='middle';
+    ctx.fillText((aMax*(1-i/5)).toFixed(0),m.l-6,y);
+    ctx.fillStyle='#8b9cff';ctx.textAlign='left';ctx.fillText((tMax*(1-i/5)).toFixed(0),w-m.r+6,y);}
+  ctx.textBaseline='alphabetic';
+  for(let i=0;i<=6;i++){const c=Cmax*i/6,x=X(c);ctx.fillStyle=AXIS;ctx.textAlign='center';
+    ctx.fillText(c.toFixed(0),x,h-12);}
+  ctx.fillStyle=AXIS;ctx.textAlign='center';ctx.fillText('crowder C (% w/v)',m.l+pw/2,h-1);
+  ctx.fillStyle='#37d29a';ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('amplitude (nM)',0,0);ctx.restore();
+  ctx.fillStyle='#8b9cff';ctx.save();ctx.translate(w-8,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('period (min)',0,0);ctx.restore();
+  // period line (only where oscillating)
+  ctx.strokeStyle='#8b9cff';ctx.lineWidth=1.6;ctx.beginPath();let started=false;
+  sw.forEach(d=>{ if(d.osc&&d.period){const x=X(d.C),y=YT(d.period);started?ctx.lineTo(x,y):ctx.moveTo(x,y);started=true;} else started=false;});
+  ctx.stroke();
+  // amplitude line
+  ctx.strokeStyle='#37d29a';ctx.lineWidth=2;ctx.beginPath();
+  sw.forEach((d,i)=>{const x=X(d.C),y=YA(d.amp);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
+  // current C marker
+  const xc=X(C); ctx.strokeStyle='#eef2fb';ctx.setLineDash([5,4]);ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.moveTo(xc,m.t);ctx.lineTo(xc,m.t+ph);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#eef2fb';ctx.textAlign='center';ctx.fillText('now',xc,m.t+10);
+}
+
+// ---------- UI build ----------
+const KNOBS=[
+ {key:'C',tgt:'C',group:'crowd',cls:'master',label:'Crowder C (% w/v)',unit:'%',min:0,max:35,step:0.5,
+   desc:'How packed the tube is. The whole study is: does the oscillation change as you turn this up? Drag it and watch the "now" line move across the prediction plot.'},
+ {key:'G',tgt:'P',group:'base',label:'Template G<sub>1</sub>',unit:'nM',min:0,max:300,step:1,
+   desc:'Baseline richness. Crowding interacts with this, so the on/off boundary depends on where you start.'},
+ {key:'pol',tgt:'P',group:'base',label:'Polymerase (Bst)',unit:'nM',min:0,max:12,step:0.1,desc:'Builder enzyme level.'},
+ {key:'rec',tgt:'P',group:'base',label:'Exonuclease (ttRecJ)',unit:'nM',min:0,max:80,step:0.5,desc:'Degrader enzyme level.'},
+ {key:'bind',tgt:'EFF',group:'eff',label:'Excluded volume (binding↑)',unit:'',min:0,max:5,step:0.1,
+   desc:'How strongly crowding tightens hybridization. Raises k₁, k₂, b and lowers Km,P. Usually the dominant, most robust crowding effect.'},
+ {key:'visc',tgt:'EFF',group:'eff',label:'Viscosity (diffusion↓)',unit:'',min:0,max:4,step:0.1,
+   desc:'How strongly crowding slows diffusion-limited association. Drags k₁, k₂ back down. Fights the excluded-volume boost.'},
+ {key:'polk',tgt:'EFF',group:'eff',label:'Polymerase turnover',unit:'',min:-3,max:3,step:0.1,
+   desc:'Crowding effect on Bst catalysis (changes k₁, k₂). Negative = crowding hinders the polymerase.'},
+ {key:'exok',tgt:'EFF',group:'eff',label:'Exonuclease turnover',unit:'',min:-3,max:3,step:0.1,
+   desc:'Crowding effect on ttRecJ catalysis (changes k_N, k_P). THE key unknown: the oscillation hinges on the exonuclease, so this slider matters most.'},
+ {key:'km',tgt:'EFF',group:'eff',label:'Duplex tightening (Km↓)',unit:'',min:-2,max:4,step:0.1,
+   desc:'How much crowding lowers the exonuclease saturation point Km,P. Lower Km,P = easier to swamp = stronger tendency to oscillate.'},
+];
+function getv(k){return k.tgt==='C'?C:(k.tgt==='P'?Pbase[k.key]:EFF[k.key]);}
+function setv(k,v){if(k.tgt==='C')C=v;else if(k.tgt==='P')Pbase[k.key]=v;else EFF[k.key]=v;}
+function fmt(v){return (Math.abs(v)>=10?v.toFixed(0):v.toFixed(1));}
+function buildKnobs(){
+  KNOBS.forEach(k=>{
+    const box=document.getElementById('grp-'+k.group);
+    const d=document.createElement('div'); d.className='knob'+(k.cls?' '+k.cls:'');
+    d.innerHTML=`<div class="top"><label>${k.label}</label><span class="val" id="v-${k.key}"></span></div>
+      <input type="range" id="s-${k.key}" min="${k.min}" max="${k.max}" step="${k.step}">
+      <div class="desc">${k.desc}</div>`;
+    box.appendChild(d);
+    d.querySelector('input').addEventListener('input',e=>{setv(k,parseFloat(e.target.value));
+      document.getElementById('v-'+k.key).textContent=fmt(getv(k))+(k.unit?' '+k.unit:'');requestUpdate();});
+  });
+}
+function syncKnobs(){KNOBS.forEach(k=>{document.getElementById('s-'+k.key).value=getv(k);
+  document.getElementById('v-'+k.key).textContent=fmt(getv(k))+(k.unit?' '+k.unit:'');});}
+
+// ---------- render ----------
+let dirty=true; function requestUpdate(){dirty=true;}
+function loop(){if(dirty){dirty=false;try{render();}catch(e){console.error(e);}}requestAnimationFrame(loop);}
+
+const Cmax=35;
+function computeSweep(){
+  const sw=[], n=28;
+  for(let i=0;i<=n;i++){const c=Cmax*i/n; const a=analyse(simulate(crowded(c),0.03,1200));
+    sw.push({C:c,amp:a.amp,period:a.period,osc:a.osc});}
+  return sw;
+}
+function render(){
+  const cp=crowded(C), dp=diluteParams();
+  const simC=simulate(cp), simD=simulate(dp);
+  plotTime(document.getElementById('ts'),simC,simD);
+  plotPhase(document.getElementById('ph'),simC,simD);
+  const sw=computeSweep(); plotSweep(document.getElementById('sweep'),sw,Cmax);
+
+  const aC=analyse(simC), aD=analyse(simD);
+  const pill=document.getElementById('state-pill');
+  if(simC.blew){pill.className='pill fixed';pill.textContent='Unstable / out of range';}
+  else if(aC.osc){pill.className='pill osc';pill.textContent='Oscillating';}
+  else{pill.className='pill fixed';pill.textContent='Steady state (no waves)';}
+  document.getElementById('m-period').textContent=aC.period?aC.period.toFixed(0)+' min':'none';
+  document.getElementById('m-amp').textContent=aC.amp.toFixed(0)+' nM';
+  // deltas vs dilute
+  const dPer=document.getElementById('d-period'), dAmp=document.getElementById('d-amp');
+  if(aC.period&&aD.period){const d=aC.period-aD.period;
+    dPer.textContent='('+(d>=0?'+':'')+d.toFixed(0)+' vs dilute)';}
+  else dPer.textContent='';
+  const da=aC.amp-aD.amp; dAmp.textContent='('+(da>=0?'+':'')+da.toFixed(0)+' vs dilute)';
+
+  // sweep note: detect on/off crossing
+  const offToOn=sw.some((d,i)=>i>0&&!sw[i-1].osc&&d.osc);
+  const onToOff=sw.some((d,i)=>i>0&&sw[i-1].osc&&!d.osc);
+  const note=document.getElementById('sweep-note');
+  if(offToOn&&!sw[0].osc) note.innerHTML='⭐ Crowding <b style="color:#37d29a">switches the oscillation ON</b> as C rises (crosses the Hopf boundary). That would be a headline result.';
+  else if(onToOff) note.innerHTML='⭐ Crowding <b style="color:#ff6b6b">switches the oscillation OFF</b> at high C. Also a clean, testable claim.';
+  else if(sw[0].osc) note.textContent='Oscillation persists across the whole range; read off how the period and amplitude drift with C.';
+  else note.textContent='No oscillation anywhere in this range, for these settings.';
+
+  // effective constants readout
+  const f=cp._f;
+  document.getElementById('eff-readout').innerHTML=
+    `<b style="color:var(--ink)">Effective rate constants at C=${C.toFixed(1)}%</b> `+
+    `(factor vs dilute): binding ×<code>${f.B.toFixed(2)}</code> &nbsp; viscosity ×<code>${f.V.toFixed(2)}</code> &nbsp; `+
+    `pol ×<code>${f.Pp.toFixed(2)}</code> &nbsp; exo ×<code>${f.Ex.toFixed(2)}</code> &nbsp; Km ×<code>${f.Km.toFixed(2)}</code><br>`+
+    `&rarr; k₁ <code>${(cp.k1/BASE.k1).toFixed(2)}×</code> &nbsp; k₂ <code>${(cp.k2/BASE.k2).toFixed(2)}×</code> &nbsp; `+
+    `k_N,k_P <code>${(cp.kN/BASE.kN).toFixed(2)}×</code> &nbsp; Km,P <code>${(cp.KmP/BASE.KmP).toFixed(2)}×</code> `+
+    `(${cp.KmP.toFixed(0)} nM)`;
+}
+
+document.querySelectorAll('button[data-preset]').forEach(b=>{
+  b.addEventListener('click',()=>{const pr=PRESETS[b.dataset.preset];
+    C=pr.C; EFF={bind:pr.bind,visc:pr.visc,polk:pr.polk,exok:pr.exok,km:pr.km};
+    syncKnobs(); requestUpdate();});
+});
+window.addEventListener('resize',requestUpdate);
+buildKnobs(); syncKnobs(); loop();
+</script>
+</body>
+</html>
