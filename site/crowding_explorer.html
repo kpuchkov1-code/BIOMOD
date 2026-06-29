@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crowded Fujii Model (BIOMOD novelty)</title>
+<title>Crowded Fujii Predator-Prey Explorer (mechanistic)</title>
 <style>
   :root{
     --prey:#4aa3ff; --pred:#ff6b6b; --cycle:#37d29a; --accent:#8b9cff;
@@ -21,31 +21,55 @@
     background:linear-gradient(180deg,#141c2c 0%,var(--bg) 100%);
     border-bottom:1px solid var(--line);}
   h1{margin:0 0 6px;font-size:23px;letter-spacing:-.01em;font-weight:700}
-  header .sub{margin:0;color:var(--muted);font-size:14px;max-width:1040px}
+  header .sub{margin:0;color:var(--muted);font-size:14px;max-width:1080px}
+  header .sub b{color:var(--ink)}
 
-  /* tug-of-war mapping */
-  .map{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
-  .mrow{display:flex;align-items:center;gap:9px;background:#0b1018;
-    border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-size:12.5px}
-  .mrow .eff{font-weight:700}
-  .mrow .up{color:var(--cycle)} .mrow .down{color:var(--pred)}
-  .mrow .arr{color:var(--faint);font-weight:700}
-  .mrow code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;
-    color:var(--ink);background:#141c2c;padding:1px 6px;border-radius:5px;
-    border:1px solid var(--line)}
+  /* word + math equation block (mirrors the dilute explorer) */
+  .eqcard{margin-top:16px;background:#0b1018;border:1px solid var(--line);
+    border-radius:12px;padding:14px 16px}
+  .eqrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  .eqrow+.eqrow{margin-top:11px;padding-top:12px;border-top:1px solid var(--line)}
+  .eqlhs{font-weight:700;font-size:13.5px;min-width:150px}
+  .eqeq,.op{color:var(--faint);font-weight:800;font-size:16px}
+  .term{display:inline-flex;flex-direction:column;gap:5px;padding:7px 12px;
+    border-radius:9px;background:#141c2c;border:1px solid var(--line)}
+  .term b{font-size:12px;font-weight:600;line-height:1.2}
+  .term.growth,.term.born{border-left:3px solid var(--cycle)}
+  .term.eat{border-left:3px solid var(--pred)}
+  .term.death{border-left:3px solid #8294b4}
+  .m{font-family:"Cambria Math",Cambria,Georgia,"Times New Roman",serif;
+    font-style:italic;font-size:13.5px;color:var(--ink);
+    display:inline-flex;align-items:center;gap:1px}
+  .m sub{font-style:normal;font-size:.66em;color:var(--faint)}
+  .m .cr{color:var(--crowd);font-style:normal;font-weight:700}
+  .frac{display:inline-flex;flex-direction:column;text-align:center;
+    vertical-align:middle;margin:0 2px}
+  .frac .num{border-bottom:1.3px solid var(--faint);padding:0 7px 1px;line-height:1.35}
+  .frac .den{padding:1px 7px 0;line-height:1.35}
 
-  .wrap{display:grid;grid-template-columns:380px 1fr;align-items:start}
-  @media(max-width:920px){.wrap{grid-template-columns:1fr}}
+  /* physical-channel chips */
+  .chan{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+  .chip{display:flex;align-items:center;gap:8px;background:#0b1018;
+    border:1px solid var(--line);border-radius:10px;padding:8px 13px;font-size:12.5px}
+  .chip .dot{width:9px;height:9px;border-radius:50%}
+  .chip b{font-weight:700}
+  .chip .ev{color:var(--cycle)} .chip .vi{color:var(--accent)}
+  .chip .ex{color:var(--pred)} .chip .pl{color:var(--crowd)}
+  .chip .arr{color:var(--faint);font-weight:700}
+
+  .wrap{display:grid;grid-template-columns:392px 1fr;align-items:start}
   .controls{padding:22px 22px;border-right:1px solid var(--line);}
   .plots{padding:22px 26px;display:flex;flex-direction:column;gap:14px;min-width:0}
 
-  .btns{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+  .btns{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 16px}
   button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);
     border-radius:9px;padding:8px 12px;font-size:12px;cursor:pointer;
     font-weight:500;transition:all .14s}
   button:hover{border-color:var(--accent);background:#26314c}
   button.primary{background:linear-gradient(135deg,var(--crowd),#e8895a);
     border-color:transparent;color:#0d1119;font-weight:700}
+  button.primary:hover{filter:brightness(1.08)}
+  button.active{border-color:var(--crowd);background:#2a2016;color:var(--crowd)}
 
   .group{margin-bottom:15px}
   .group .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;
@@ -82,55 +106,100 @@
     border:1px solid rgba(255,207,92,.5)}
 
   .plotgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:1150px){.plotgrid{grid-template-columns:1fr}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:14px 15px}
+  .plotcard{display:flex;flex-direction:column;min-height:0}
   .card .ct{display:flex;justify-content:space-between;align-items:baseline;
     margin:0 0 9px;flex-wrap:wrap;gap:4px}
   .card .ct h3{margin:0;font-size:14px;font-weight:700}
   .card .ct .hint,.card .ct .legend{font-size:11.5px;color:var(--faint)}
-  .legend{display:flex;gap:14px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap}
   .legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
   .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
-  canvas{width:100%;display:block;border-radius:8px;height:300px}
+  .plotcard canvas{width:100%;display:block;border-radius:8px;height:300px}
   #sweep{height:330px}
 
-  .effbox{font-size:12px;color:var(--muted);line-height:1.8}
+  .effbox{font-size:12px;color:var(--muted);line-height:1.85}
+  .effbox b{color:var(--ink)}
   .effbox code{color:var(--cycle);font-variant-numeric:tabular-nums;
     background:#0b1018;padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
-  .effbox .dn{color:var(--pred)} .effbox .upx{color:var(--cycle)}
+  .effbox .dn{color:var(--pred)} .effbox .up{color:var(--cycle)}
+  .effbox .sep{color:var(--faint);margin:0 5px}
 
-  .explain h3{margin:0 0 10px;font-size:15px;color:var(--accent);font-weight:700}
-  .secs{column-count:2;column-gap:34px}
-  @media(max-width:1150px){.secs{column-count:1}}
+  .explain h3{margin:0 0 12px;font-size:15px;color:var(--accent);font-weight:700}
+  .secs{column-count:2;column-gap:34px;margin-top:2px}
   .sec{break-inside:avoid;margin-bottom:12px}
   .sec h4{margin:0 0 5px;font-size:13px;color:var(--accent2);font-weight:700}
   .sec p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
   .sec b{color:var(--ink)} .sec .k{color:var(--crowd);font-weight:600}
   .warnote{background:rgba(255,207,92,.08);border:1px solid rgba(255,207,92,.35);
     border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--warn);
-    margin-top:4px}
+    margin-top:6px}
   .warnote b{color:#ffe6a6}
+
+  @media(max-width:1150px){
+    .plotgrid{grid-template-columns:1fr}
+    .plotcard canvas{min-height:280px}
+    .secs{column-count:1}
+  }
+  @media(max-width:920px){
+    .wrap{grid-template-columns:1fr;align-items:start}
+    .controls{border-right:none;border-bottom:1px solid var(--line)}
+    .plots{display:block}
+    .plots>*{margin-bottom:14px}
+    .plotgrid{display:block}
+    .plotcard{margin-bottom:14px}
+    .plotcard canvas{height:300px;min-height:0;flex:none}
+  }
   a{color:var(--accent)}
 </style>
 </head>
 <body>
 <header>
-  <h1>🧪🦊🐰 Crowded Predator-Prey Model</h1>
-  <p class="sub">Your team's contribution: pack the tube full of an inert crowder
-  (PEG, Ficoll, dextran) and ask how it changes the oscillation. Crowding does not
-  add new species or equations; it <b>re-scales the existing rate constants</b>. Two
-  effects pull in opposite directions, and which one wins is the question your model
-  is built to predict before wet lab tests it.</p>
+  <h1>🧪🦊🐰 Crowded Predator-Prey Explorer <span style="font-size:14px;color:var(--crowd);font-weight:600">· mechanistic</span></h1>
+  <p class="sub">The BIOMOD novelty layer. This runs the <b>full seven-species
+  reaction network</b> (free prey N, predator P, template G, and the four
+  enzyme/template complexes), and lets molecular crowding act on every elementary
+  step through shared physics, <b>not</b> by multiplying lumped rate constants by
+  hand. Turn up the crowder and watch the oscillation respond. The two ODEs below
+  are the reduced read-out; the <span style="color:var(--crowd)">amber</span>
+  constants are the ones crowding moves:</p>
 
-  <div class="map">
-    <div class="mrow"><span class="eff up">Excluded volume</span><span class="arr">→</span>
-      tighter binding / faster association <span class="up">↑</span>
-      <code>k₁</code><code>k₂</code><code>b</code> up, <code>Km,P</code> down</div>
-    <div class="mrow"><span class="eff down">Viscosity</span><span class="arr">→</span>
-      slower diffusion <span class="down">↓</span> <code>k₁</code><code>k₂</code> down</div>
-    <div class="mrow"><span class="eff">Enzyme shift</span><span class="arr">→</span>
-      Pol &amp; Exo turnover change <code>k₁</code><code>k₂</code><code>k_N</code><code>k_P</code></div>
+  <div class="eqcard">
+    <div class="eqrow">
+      <span class="eqlhs">🐰 Prey, change per min</span><span class="eqeq">=</span>
+      <span class="term growth"><b>＋ growth on template</b>
+        <span class="m"><span class="frac"><span class="num"><span class="cr">k</span><sub>1</sub> pol G N</span><span class="den">1 + <span class="cr">b</span> G N</span></span></span></span>
+      <span class="op">−</span>
+      <span class="term eat"><b>eaten by predators</b>
+        <span class="m"><span class="cr">k</span><sub>2</sub> pol N P</span></span>
+      <span class="op">−</span>
+      <span class="term death"><b>chewed up (death)</b>
+        <span class="m"><span class="frac"><span class="num">rec <span class="cr">k</span><sub>N</sub> N</span><span class="den">1 + P/<span class="cr">K</span><sub>m,P</sub></span></span></span></span>
+    </div>
+    <div class="eqrow">
+      <span class="eqlhs">🦊 Predator, change per min</span><span class="eqeq">=</span>
+      <span class="term born"><b>＋ born from eating prey</b>
+        <span class="m"><span class="cr">k</span><sub>2</sub> pol N P</span></span>
+      <span class="op">−</span>
+      <span class="term death"><b>chewed up (death)</b>
+        <span class="m"><span class="frac"><span class="num">rec <span class="cr">k</span><sub>P</sub> P</span><span class="den">1 + P/<span class="cr">K</span><sub>m,P</sub></span></span></span></span>
+    </div>
+  </div>
+
+  <div class="chan">
+    <div class="chip"><span class="dot" style="background:var(--cycle)"></span>
+      <b class="ev">Excluded volume</b><span class="arr">→</span> tighter binding
+      <span class="ev">↑ k₁ k₂ b</span>, <span class="ev">↓ Km,P</span></div>
+    <div class="chip"><span class="dot" style="background:var(--accent)"></span>
+      <b class="vi">Viscosity</b><span class="arr">→</span> slower diffusion
+      <span class="vi">↓ on-rates</span></div>
+    <div class="chip"><span class="dot" style="background:var(--pred)"></span>
+      <b class="ex">Exonuclease inhibition</b><span class="arr">→</span>
+      <span class="ex">↓ kcat (k_N, k_P)</span></div>
+    <div class="chip"><span class="dot" style="background:var(--crowd)"></span>
+      <b class="pl">Pol / nick boost</b><span class="arr">→</span>
+      <span class="pl">↑ kcat (k₁, k₂)</span></div>
   </div>
 </header>
 
@@ -138,23 +207,22 @@
   <!-- ============ CONTROLS ============ -->
   <div class="controls">
     <div class="btns">
-      <button class="primary" data-preset="peg">PEG 8000</button>
-      <button data-preset="ficoll">Ficoll 400</button>
-      <button data-preset="dextran">Dextran</button>
-      <button data-preset="none">No crowder</button>
+      <button class="primary" data-crowder="PEG8000">PEG 8000 (coil)</button>
+      <button data-crowder="FICOLL400">Ficoll 400 (sphere)</button>
+      <button data-preset="dilute">↺ Dilute (C=0)</button>
     </div>
 
     <div class="group crowd" id="grp-crowd">
-      <div class="eyebrow">Crowder</div>
+      <div class="eyebrow">Crowder loading</div>
       <div class="gsub">the master experimental variable (x-axis of your study)</div>
     </div>
-    <div class="group" id="grp-base">
-      <div class="eyebrow">Baseline setup</div>
-      <div class="gsub">the dilute system the crowder acts on</div>
+    <div class="group" id="grp-phys">
+      <div class="eyebrow">Physical channels — what crowding is doing</div>
+      <div class="gsub">literature-anchored hypotheses; each preset loads its own defaults</div>
     </div>
-    <div class="group" id="grp-eff">
-      <div class="eyebrow">Crowding effect strengths</div>
-      <div class="gsub">hypotheses: how strongly C moves each rate (per unit fraction)</div>
+    <div class="group" id="grp-base">
+      <div class="eyebrow">Baseline system (dilute)</div>
+      <div class="gsub">the uncrowded circuit the crowder acts on</div>
     </div>
   </div>
 
@@ -164,156 +232,256 @@
       <span id="state-pill" class="pill osc">...</span>
       <span class="metric">Period:<b id="m-period">...</b><span class="delta" id="d-period"></span></span>
       <span class="metric">Predator amplitude:<b id="m-amp">...</b><span class="delta" id="d-amp"></span></span>
+      <span class="metric">φ (volume fraction):<b id="m-phi">...</b></span>
     </div>
 
     <div class="plotgrid">
-      <div class="card">
+      <div class="card plotcard">
         <div class="ct"><h3>Populations over time</h3>
           <span class="legend">
-            <span><i class="sw" style="background:var(--prey)"></i>Prey</span>
-            <span><i class="sw" style="background:var(--pred)"></i>Predator</span>
-            <span><i class="sw" style="background:#5a6b8a"></i>dilute (C=0)</span>
+            <span><i class="sw" style="background:var(--prey)"></i>Prey N</span>
+            <span><i class="sw" style="background:var(--pred)"></i>Predator P</span>
+            <span><i class="sw" style="background:#5a6b8a"></i>dilute P</span>
           </span></div>
         <canvas id="ts"></canvas>
       </div>
-      <div class="card">
+      <div class="card plotcard">
         <div class="ct"><h3>Phase portrait</h3>
           <span class="hint">crowded (green) vs dilute (grey)</span></div>
         <canvas id="ph"></canvas>
       </div>
     </div>
 
-    <div class="card">
-      <div class="ct"><h3>⭐ Prediction: sweep crowder concentration C</h3>
+    <div class="card plotcard">
+      <div class="ct"><h3>⭐ Prediction: sweep crowder concentration</h3>
         <span class="legend">
           <span><i class="sw" style="background:var(--cycle)"></i>amplitude</span>
           <span><i class="sw" style="background:var(--accent)"></i>period</span>
-          <span><i class="sw" style="background:rgba(246,167,107,.5)"></i>oscillating</span>
+          <span><i class="sw" style="background:rgba(245,167,107,.5)"></i>oscillating band</span>
         </span></div>
       <canvas id="sweep"></canvas>
       <div class="hint" id="sweep-note" style="margin-top:8px;color:var(--faint);font-size:12px"></div>
     </div>
 
-    <div class="card effbox" id="eff-readout">Effective rate constants: ...</div>
+    <div class="card effbox" id="eff-readout">Effective constants: ...</div>
 
     <div class="card explain">
-      <h3>What this page is saying</h3>
+      <h3>Reading the mechanistic model</h3>
       <div class="secs">
         <div class="sec">
-          <h4>Crowding re-scales the knobs</h4>
-          <p>Every rate constant becomes a function of crowder fraction C. Excluded
-          volume makes molecules act more concentrated, so binding and association
-          speed up (<span class="k">k₁, k₂</span> up, <span class="k">Km,P</span>
-          down). Viscosity slows diffusion, dragging the same association rates back
-          down. Crowding also shifts the polymerase and exonuclease turnover.</p>
+          <h4>1. One physics, every step</h4>
+          <p>Crowding enters through scaled-particle <b>excluded volume</b>
+          (μ_ex), scale-dependent <b>viscosity</b>, and enzyme-class catalytic
+          shifts. The same excluded volume that stabilises a duplex also tightens
+          enzyme binding; the same viscosity that slows the polymerase slows the
+          exonuclease. Nothing is fit per-constant — it all flows from
+          <span class="k">φ</span>, crowder radius and species sizes.</p>
         </div>
         <div class="sec">
-          <h4>The tug-of-war</h4>
-          <p>Excluded volume speeds reactions up; viscosity slows them down. They push
-          the period in opposite directions, so the net effect is <b>not obvious in
-          advance</b>. That is exactly why a model is worth building: it turns your
-          assumed effect strengths into a concrete, testable curve.</p>
+          <h4>2. The oscillation engine</h4>
+          <p>The shared exonuclease (ttRecJ) is a <b>conserved, saturable</b>
+          resource. A crowd of predators swamps it, so a surge protects itself —
+          that self-feeding is what makes the rhythm. Crowding that slows the
+          exonuclease (<span class="k">exo inhibition</span>) is the strongest
+          lever on whether the rhythm survives.</p>
         </div>
         <div class="sec">
-          <h4>The strongest possible result</h4>
-          <p>Watch the sweep plot. If raising C carries the amplitude across zero, then
-          crowding <b>switches the oscillation on or off</b> (it crosses the Hopf
-          boundary). Showing that crowding alone can start or stop the rhythm is the
-          cleanest, most striking claim you can make, and it is fully falsifiable.</p>
+          <h4>3. PEG vs Ficoll — the headline</h4>
+          <p>Crowder radius enters through <b>z = r/R_c</b>. Small-radius PEG
+          excludes far more volume per unit φ and has a real semidilute mesh, so
+          it crosses the <b>Hopf boundary</b> and kills the oscillation near
+          ~10–12% w/v. Big, compact Ficoll is much milder and keeps oscillating.
+          Watch the sweep: that divergence at equal φ is the falsifiable claim.</p>
         </div>
         <div class="sec">
-          <h4>Be honest about the unknowns</h4>
-          <p>The effect-strength sliders are <b>hypotheses</b>, not measured values.
-          The biggest unknown is how crowding affects the exonuclease (ttRecJ), since
-          the oscillation hinges on it. Wet lab measures these by running the enzyme
-          assays in crowder; this model just shows what each assumption predicts.</p>
+          <h4>4. Why a full network</h4>
+          <p>The two-variable read-out is for intuition only. The quantitative
+          predictions come from integrating all seven species, because prey and
+          predator are transiently held in the complexes — the bare reduction is
+          too fragile to reproduce the period or the Hopf point.</p>
         </div>
       </div>
-      <div class="warnote">⚠ <b>Defaults are illustrative.</b> Replace the effect
-      strengths with values fitted to crowding literature or your own calibration runs
-      before treating any curve as a real prediction.</div>
+      <div class="warnote">⚠ <b>Coefficients are hypotheses for calibration.</b>
+      All Ficoll-400 numbers are extrapolations (no primary Ficoll-400 datum in
+      the surveyed literature), and the exonuclease anchor is an Exo&nbsp;I number
+      — ttRecJ activity vs crowder is the single highest-value wet-lab
+      measurement. The dilute limit (C=0) reproduces the validated paper cycle.</div>
     </div>
   </div>
 </div>
 
 <script>
-// ---------- dilute baseline (paper PP1) ----------
-const BASE = { G:140, pol:3.7, rec:32.5, N0:10, P0:30,
-  k1:2.0e-3, b:4.8e-5, k2:3.1e-3, kN:2.1e-2, kP:4.7e-3, KmP:34 };
-let Pbase = {G:BASE.G, pol:BASE.pol, rec:BASE.rec};   // adjustable baseline
-let C = 12;   // crowder, % w/v
-// effect strengths (slopes acting on fraction Cf = C/100)
-let EFF = { bind:2.5, visc:1.5, polk:-0.6, exok:-1.2, km:1.2 };
+"use strict";
+/* =====================================================================
+   MECHANISTIC CROWDING MODEL  (JS port of crowded_mechanistic.py)
+   7-species network + scaled-particle / Holyst physics on every step.
+   Binding is slowed by SBIND for in-browser RK4 stability; this preserves
+   the slow (~90 min) dynamics because the complexes stay quasi-stationary
+   (validated against the LSODA reference: period 90.7 vs 89.9 min).
+   ===================================================================== */
+const RADII={N:1.2,P:1.2,G:2.0,C_NG:2.2,C_NP:1.5,Pol:3.0,Exo:2.8,C_NE:3.0,C_PE:3.0};
+const TAU=0.8;
+const ELEM0={
+  kon_NG:1.344, koff_NG:200.0, kcat_g:1.101*TAU,
+  kon_NP:0.40,  koff_NP:200.0, kcat_p:5.735*TAU,
+  kon_eP:2.0,   koff_eP:67.84, kcat_eP:0.16*TAU,
+  kon_eN:2.0,   koff_eN:1979.0,kcat_eN:21.0*TAU,
+};
+const POL_REF=3.7;                 // reference polymerase used in the eff-constant map
+const SBIND=0.2;                   // binding slowdown for in-browser integration
 
-const PRESETS = {
-  peg:    {C:15, bind:2.8, visc:2.0, polk:-0.8, exok:-1.4, km:1.4},
-  ficoll: {C:15, bind:2.5, visc:1.0, polk:-0.3, exok:-0.8, km:1.2},
-  dextran:{C:15, bind:2.2, visc:1.4, polk:-0.4, exok:-1.0, km:1.0},
-  none:   {C:0,  bind:0,   visc:0,   polk:0,    exok:0,    km:0},
+// crowder library (literature-anchored). c_exo, c_polnick = catalytic slopes.
+const CROWDERS={
+  PEG8000:{label:'PEG 8000',kind:'coil',M:8000,v_bar:0.83,R_c:3.4,R_h:2.5,
+    monomer_M:44,visc_a:0.78,visc_b:1.61,c_polnick:3.0,c_exo:10.3,spt_scale:1.0},
+  FICOLL400:{label:'Ficoll 400',kind:'sphere',M:400000,v_bar:0.67,R_c:10.0,R_h:10.0,
+    monomer_M:350,visc_a:1.0,visc_b:2.5,c_polnick:2.0,c_exo:5.0,spt_scale:1.0},
 };
 
-// ---------- the crowding model: rate constants as functions of C ----------
-function crowded(Cpct){
-  const Cf = Cpct/100;
-  const B  = Math.exp(EFF.bind*Cf);     // excluded volume / duplex stabilization (binding up)
-  const V  = Math.exp(-EFF.visc*Cf);    // viscosity slows diffusion-limited association
-  const Pp = Math.max(0, 1 + EFF.polk*Cf); // polymerase turnover change
-  const Ex = Math.max(0, 1 + EFF.exok*Cf); // exonuclease turnover change
-  const Km = Math.exp(-EFF.km*Cf);      // tighter duplex -> lower Km
-  return {
-    G:Pbase.G, pol:Pbase.pol, rec:Pbase.rec, N0:BASE.N0, P0:BASE.P0,
-    k1: BASE.k1 * B * V * Pp,
-    k2: BASE.k2 * B * V * Pp,
-    b : BASE.b  * B,
-    kN: BASE.kN * Ex,
-    kP: BASE.kP * Ex,
-    KmP: BASE.KmP * Km,
-    _f:{B,V,Pp,Ex,Km}
-  };
-}
-function diluteParams(){ return {G:Pbase.G,pol:Pbase.pol,rec:Pbase.rec,N0:BASE.N0,P0:BASE.P0,
-  k1:BASE.k1,b:BASE.b,k2:BASE.k2,kN:BASE.kN,kP:BASE.kP,KmP:BASE.KmP}; }
+// ----- live state ------------------------------------------------------------
+const ST={
+  crowder:'PEG8000', C:10,                 // % w/v
+  R_c:3.4, spt_scale:1.0, visc_b:1.61, c_exo:10.3, c_polnick:3.0,  // physical knobs
+  G:140, rec:32.5, polf:1.0,               // baseline
+  leakN:0.02, leakP:0.006,
+};
+const N0=10, P0=30;
 
-// ---------- ODE ----------
-function deriv(N,Pr,p){
-  const sat=1+Pr/p.KmP;
-  const growth=p.k1*p.pol*p.G*N/(1+p.b*p.G*N);
-  const predation=p.k2*p.pol*N*Pr;
-  return [growth - predation - p.rec*p.kN*N/sat, predation - p.rec*p.kP*Pr/sat];
+// merge the editable physical knobs onto the selected crowder's fixed props
+function activeCrowder(){
+  const base=CROWDERS[ST.crowder];
+  return Object.assign({},base,{R_c:ST.R_c,spt_scale:ST.spt_scale,visc_b:ST.visc_b,
+    c_polnick:ST.c_polnick,c_exo:ST.c_exo});
 }
-function simulate(p,dt,T){
-  dt=dt||0.012; T=T||1800;
-  const steps=Math.round(T/dt), CAP=1e6;
-  let N=p.N0,Pr=p.P0,blew=false;
+
+// ----- physical primitives ---------------------------------------------------
+function volFraction(wt,cr){return cr.v_bar*wt/100;}
+function sptMuEx(r,phi,cr){
+  if(phi<=0)return 0;
+  const z=r/cr.R_c, Q=phi/(1-phi);
+  return cr.spt_scale*(-Math.log(1-phi)+(3*z+3*z*z+z*z*z)*Q);
+}
+function dGassoc(rA,rB,rAB,phi,cr){
+  return sptMuEx(rAB,phi,cr)-sptMuEx(rA,phi,cr)-sptMuEx(rB,phi,cr);
+}
+function waterDG(phi,nw){return nw*(-0.6*phi);}
+function overlapWt(cr){
+  const NA=6.022e23, Rg=cr.R_c*1e-7;
+  return (3*cr.M/(4*Math.PI*NA*Rg*Rg*Rg))*100;
+}
+function viscFactor(wt,cr,r){
+  if(wt<=0)return 1;
+  const phi=volFraction(wt,cr);
+  if(cr.kind==='coil'){
+    const cs=overlapWt(cr), xi=cr.R_c*Math.pow(wt/cs,-0.75);
+    const Reff=1/Math.sqrt(1/(cr.R_h*cr.R_h)+1/(r*r));
+    return Math.exp(cr.visc_b*Math.pow(Reff/xi,cr.visc_a));
+  }
+  const pm=0.6, ph=Math.min(phi,0.95*pm);
+  return Math.exp(cr.visc_b*ph/(1-ph/pm));
+}
+function diffFactor(wt,cr,rA,rB){return 1/viscFactor(wt,cr,Math.max(rA,rB));}
+
+// ----- elementary constants (physical; no de-stiffen) ------------------------
+function elemPhysical(wt,cr,polf){
+  const e=Object.assign({},ELEM0);
+  e.kcat_g*=polf; e.kcat_p*=polf;
+  if(wt>0){
+    const phi=volFraction(wt,cr);
+    const assoc=(kon0,koff0,rA,rB,rAB,nw)=>{
+      const dG=dGassoc(rA,rB,rAB,phi,cr)+waterDG(phi,nw);
+      const K=(kon0/koff0)*Math.exp(-dG);
+      const kon=kon0*diffFactor(wt,cr,rA,rB);
+      return [kon,kon/K];
+    };
+    [e.kon_NG,e.koff_NG]=assoc(ELEM0.kon_NG,ELEM0.koff_NG,RADII.N,RADII.G,RADII.C_NG,2.0);
+    [e.kon_NP,e.koff_NP]=assoc(ELEM0.kon_NP,ELEM0.koff_NP,RADII.N,RADII.P,RADII.C_NP,2.0);
+    [e.kon_eN,e.koff_eN]=assoc(ELEM0.kon_eN,ELEM0.koff_eN,RADII.N,RADII.Exo,RADII.C_NE,0.0);
+    [e.kon_eP,e.koff_eP]=assoc(ELEM0.kon_eP,ELEM0.koff_eP,RADII.P,RADII.Exo,RADII.C_PE,0.0);
+    const fpol=Math.exp(cr.c_polnick*phi), fexo=Math.exp(-cr.c_exo*phi);
+    e.kcat_g*=fpol; e.kcat_p*=fpol; e.kcat_eN*=fexo; e.kcat_eP*=fexo;
+  }
+  return e;
+}
+function elemSim(wt,cr,polf){          // de-stiffened copy for the integrator
+  const e=elemPhysical(wt,cr,polf);
+  ['kon_NG','koff_NG','kon_NP','koff_NP','kon_eN','koff_eN','kon_eP','koff_eP']
+    .forEach(k=>e[k]*=SBIND);
+  return e;
+}
+function effectiveConstants(e,G){
+  const K1=e.kon_NG/e.koff_NG, K2=e.kon_NP/e.koff_NP;
+  const KmP=(e.koff_eP+e.kcat_eP)/e.kon_eP, KmN=(e.koff_eN+e.kcat_eN)/e.kon_eN;
+  return {k1:e.kcat_g*K1/POL_REF, b:K1/G, k2:e.kcat_p*K2/POL_REF,
+          kN:e.kcat_eN/KmN, kP:e.kcat_eP/KmP, KmP:KmP};
+}
+
+// ----- the 7-species ODE network (flat scalars for speed) --------------------
+//   y = [N, P, Gf, C_NG, C_NP, C_NE, C_PE]
+function simulate(e,rec,leakN,leakP,G,dt,T){
+  dt=dt||0.004; T=T||1600;
+  const steps=Math.round(T/dt), CAP=1e7;
+  let N=N0,P=P0,Gf=G,cNG=0,cNP=0,cNE=0,cPE=0,blew=false;
+  const kgNG=e.kon_NG,kfNG=e.koff_NG,kcg=e.kcat_g,
+        kgNP=e.kon_NP,kfNP=e.koff_NP,kcp=e.kcat_p,
+        keN=e.kon_eN,kfeN=e.koff_eN,kceN=e.kcat_eN,
+        keP=e.kon_eP,kfeP=e.koff_eP,kceP=e.kcat_eP;
+  // RHS into a reusable 7-vector via closure
+  function f(N,P,Gf,cNG,cNP,cNE,cPE,o){
+    if(N<0)N=0; if(P<0)P=0; if(Gf<0)Gf=0; if(cNG<0)cNG=0;
+    if(cNP<0)cNP=0; if(cNE<0)cNE=0; if(cPE<0)cPE=0;
+    let E=rec-cNE-cPE; if(E<0)E=0;
+    const rNGon=kgNG*N*Gf, rNGoff=kfNG*cNG, rgrow=kcg*cNG;
+    const rNPon=kgNP*N*P,  rNPoff=kfNP*cNP, rpred=kcp*cNP;
+    const reNon=keN*N*E,   reNoff=kfeN*cNE, reNcat=kceN*cNE;
+    const rePon=keP*P*E,   rePoff=kfeP*cPE, rePcat=kceP*cPE;
+    o[0]=-rNGon+rNGoff+2*rgrow -rNPon+rNPoff -reNon+reNoff +leakN; // dN
+    o[1]=-rNPon+rNPoff+2*rpred -rePon+rePoff +leakP;               // dP
+    o[2]=-rNGon+rNGoff+rgrow;                                      // dGf
+    o[3]=rNGon-rNGoff-rgrow;                                       // dC_NG
+    o[4]=rNPon-rNPoff-rpred;                                       // dC_NP
+    o[5]=reNon-reNoff-reNcat;                                      // dC_NE
+    o[6]=rePon-rePoff-rePcat;                                      // dC_PE
+  }
   const keep=Math.max(1,Math.floor(steps/1400));
   const ts=[],Ns=[],Ps=[];
+  const k1=new Array(7),k2=new Array(7),k3=new Array(7),k4=new Array(7);
   for(let i=0;i<=steps;i++){
-    if(i%keep===0){ts.push(i*dt);Ns.push(N);Ps.push(Pr);}
-    const a=deriv(N,Pr,p);
-    const b=deriv(N+0.5*dt*a[0],Pr+0.5*dt*a[1],p);
-    const c=deriv(N+0.5*dt*b[0],Pr+0.5*dt*b[1],p);
-    const d=deriv(N+dt*c[0],Pr+dt*c[1],p);
-    N+=dt/6*(a[0]+2*b[0]+2*c[0]+d[0]); Pr+=dt/6*(a[1]+2*b[1]+2*c[1]+d[1]);
-    if(N<0)N=0; if(Pr<0)Pr=0;
-    if(!isFinite(N)||!isFinite(Pr)||N>CAP||Pr>CAP){blew=true;break;}
+    if(i%keep===0){ts.push(i*dt);Ns.push(N);Ps.push(P);}
+    f(N,P,Gf,cNG,cNP,cNE,cPE,k1);
+    f(N+0.5*dt*k1[0],P+0.5*dt*k1[1],Gf+0.5*dt*k1[2],cNG+0.5*dt*k1[3],cNP+0.5*dt*k1[4],cNE+0.5*dt*k1[5],cPE+0.5*dt*k1[6],k2);
+    f(N+0.5*dt*k2[0],P+0.5*dt*k2[1],Gf+0.5*dt*k2[2],cNG+0.5*dt*k2[3],cNP+0.5*dt*k2[4],cNE+0.5*dt*k2[5],cPE+0.5*dt*k2[6],k3);
+    f(N+dt*k3[0],P+dt*k3[1],Gf+dt*k3[2],cNG+dt*k3[3],cNP+dt*k3[4],cNE+dt*k3[5],cPE+dt*k3[6],k4);
+    N +=dt/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]);
+    P +=dt/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]);
+    Gf+=dt/6*(k1[2]+2*k2[2]+2*k3[2]+k4[2]);
+    cNG+=dt/6*(k1[3]+2*k2[3]+2*k3[3]+k4[3]);
+    cNP+=dt/6*(k1[4]+2*k2[4]+2*k3[4]+k4[4]);
+    cNE+=dt/6*(k1[5]+2*k2[5]+2*k3[5]+k4[5]);
+    cPE+=dt/6*(k1[6]+2*k2[6]+2*k3[6]+k4[6]);
+    if(N<0)N=0; if(P<0)P=0; if(Gf<0)Gf=0;
+    if(!isFinite(N)||!isFinite(P)||N>CAP||P>CAP){blew=true;break;}
   }
   return {ts,Ns,Ps,T,blew};
 }
+
+// ----- analysis --------------------------------------------------------------
 function safeMax(a){let m=0;for(const x of a)if(isFinite(x)&&x>m)m=x;return m;}
 function safeMin(a){let m=Infinity;for(const x of a)if(isFinite(x)&&x<m)m=x;return isFinite(m)?m:0;}
 function analyse(sim){
   const {ts,Ns,Ps}=sim, t0=ts[ts.length-1]*0.5, idx=ts.findIndex(t=>t>=t0);
   const tT=ts.slice(idx),tP=Ps.slice(idx),tN=Ns.slice(idx);
-  const pMin=safeMin(tP),pMax=safeMax(tP), nMin=safeMin(tN),nMax=safeMax(tN);
+  const pMin=safeMin(tP),pMax=safeMax(tP),nMin=safeMin(tN),nMax=safeMax(tN);
   const mean=tP.reduce((s,x)=>s+x,0)/tP.length, peaks=[];
-  for(let i=1;i<tP.length-1;i++) if(tP[i]>tP[i-1]&&tP[i]>tP[i+1]&&tP[i]>mean) peaks.push(tT[i]);
+  for(let i=1;i<tP.length-1;i++)
+    if(tP[i]>tP[i-1]&&tP[i]>tP[i+1]&&tP[i]>mean) peaks.push(tT[i]);
   let period=null;
   if(peaks.length>=2){let d=0;for(let i=1;i<peaks.length;i++)d+=peaks[i]-peaks[i-1];period=d/(peaks.length-1);}
-  const amp=pMax-pMin, osc=amp>1&&(pMax>0?amp/pMax>0.03:false)&&peaks.length>=2;
+  const amp=pMax-pMin, osc=amp>2&&(pMax>0?amp/pMax>0.04:false)&&peaks.length>=2;
   return {period,amp,osc,nMin,nMax,pMin,pMax};
 }
 
-// ---------- plotting ----------
+// ----- plotting --------------------------------------------------------------
 const GRID='#243150', AXIS='#8294b4', PANEL='#0e1521';
 function setup(cv){const r=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
   cv.width=Math.round(w*r);cv.height=Math.round(h*r);const c=cv.getContext('2d');
@@ -336,7 +504,6 @@ function plotTime(cv,sim,dil){
   ctx.fillStyle=AXIS;ctx.textAlign='center';ctx.fillText('time (min)',m.l+pw/2,h-1);
   ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);
   ctx.fillText('concentration (nM)',0,0);ctx.restore();
-  // dilute predator reference (faint dashed)
   ctx.setLineDash([4,4]); ctx.strokeStyle='#5a6b8a'; ctx.lineWidth=1.2; ctx.beginPath();
   dil.ts.forEach((t,i)=>{const x=X(t),y=Y(dil.Ps[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
   ctx.stroke(); ctx.setLineDash([]);
@@ -363,18 +530,17 @@ function plotPhase(cv,sim,dil){
   ctx.fillText('Predator P (nM)',0,0);ctx.restore();
   const draw=(s,col,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineJoin='round';ctx.beginPath();
     s.Ns.forEach((n,i)=>{const x=X(n),y=Y(s.Ps[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();};
-  draw(dil,'rgba(120,140,175,.55)',1.1);     // dilute reference
-  draw(sim,'rgba(55,210,154,.95)',1.4);      // crowded
+  draw(dil,'rgba(120,140,175,.55)',1.1);
+  draw(sim,'rgba(55,210,154,.95)',1.4);
 }
 
-function plotSweep(cv,sw,Cmax){
+function plotSweep(cv,sw,Cmax,Cnow){
   const {ctx,w,h}=setup(cv), m={l:46,r:48,t:12,b:34}, pw=w-m.l-m.r, ph=h-m.t-m.b;
   const aMax=niceMax(safeMax(sw.map(d=>d.amp))*1.1);
-  const tMax=niceMax(safeMax(sw.map(d=>d.period||0))*1.1);
+  const tMax=niceMax(safeMax(sw.map(d=>d.period||0))*1.1)||1;
   const X=c=>m.l+pw*c/Cmax, YA=v=>m.t+ph*(1-v/aMax), YT=v=>m.t+ph*(1-v/tMax);
   ctx.clearRect(0,0,w,h); ctx.fillStyle=PANEL; ctx.fillRect(m.l,m.t,pw,ph);
-  // shade oscillating C bands
-  ctx.fillStyle='rgba(246,167,107,.16)';
+  ctx.fillStyle='rgba(245,167,107,.15)';
   sw.forEach((d,i)=>{ if(d.osc){ const x0=X(i>0?(sw[i-1].C+d.C)/2:d.C);
     const x1=X(i<sw.length-1?(sw[i+1].C+d.C)/2:d.C); ctx.fillRect(x0,m.t,Math.max(1,x1-x0),ph);} });
   ctx.font='11px Inter,sans-serif';
@@ -391,41 +557,42 @@ function plotSweep(cv,sw,Cmax){
   ctx.fillText('amplitude (nM)',0,0);ctx.restore();
   ctx.fillStyle='#8b9cff';ctx.save();ctx.translate(w-8,m.t+ph/2);ctx.rotate(-Math.PI/2);
   ctx.fillText('period (min)',0,0);ctx.restore();
-  // period line (only where oscillating)
   ctx.strokeStyle='#8b9cff';ctx.lineWidth=1.6;ctx.beginPath();let started=false;
   sw.forEach(d=>{ if(d.osc&&d.period){const x=X(d.C),y=YT(d.period);started?ctx.lineTo(x,y):ctx.moveTo(x,y);started=true;} else started=false;});
   ctx.stroke();
-  // amplitude line
   ctx.strokeStyle='#37d29a';ctx.lineWidth=2;ctx.beginPath();
   sw.forEach((d,i)=>{const x=X(d.C),y=YA(d.amp);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
-  // current C marker
-  const xc=X(C); ctx.strokeStyle='#eef2fb';ctx.setLineDash([5,4]);ctx.lineWidth=1.3;
+  const xc=X(Cnow); ctx.strokeStyle='#eef2fb';ctx.setLineDash([5,4]);ctx.lineWidth=1.3;
   ctx.beginPath();ctx.moveTo(xc,m.t);ctx.lineTo(xc,m.t+ph);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='#eef2fb';ctx.textAlign='center';ctx.fillText('now',xc,m.t+10);
 }
 
-// ---------- UI build ----------
+// ----- knobs -----------------------------------------------------------------
 const KNOBS=[
- {key:'C',tgt:'C',group:'crowd',cls:'master',label:'Crowder C (% w/v)',unit:'%',min:0,max:35,step:0.5,
-   desc:'How packed the tube is. The whole study is: does the oscillation change as you turn this up? Drag it and watch the "now" line move across the prediction plot.'},
- {key:'G',tgt:'P',group:'base',label:'Template G<sub>1</sub>',unit:'nM',min:0,max:300,step:1,
+ {key:'C',group:'crowd',cls:'master',label:'Crowder C (% w/v)',unit:'%',min:0,max:20,step:0.25,
+   desc:'How packed the tube is. The whole study: does the rhythm change as you turn this up? Drag it and watch the "now" line cross the prediction plot.'},
+ {key:'R_c',group:'phys',label:'Crowder radius R<sub>c</sub>',unit:'nm',min:2,max:14,step:0.1,
+   desc:'Sets z = r/R_c in the excluded-volume term. SMALLER radius (PEG) excludes far more volume per unit φ — the core reason PEG and Ficoll differ.'},
+ {key:'spt_scale',group:'phys',label:'Excluded-volume strength',unit:'×',min:0,max:2,step:0.05,
+   desc:'Overall magnitude of the scaled-particle excluded volume. Tightens all binding (raises k₁, k₂, b; lowers Km,P).'},
+ {key:'visc_b',group:'phys',label:'Viscosity strength b',unit:'',min:0,max:4,step:0.05,
+   desc:'How strongly the crowder mesh slows diffusion-limited association. Drags the on-rates (and k₁, k₂) back down.'},
+ {key:'c_exo',group:'phys',label:'Exonuclease inhibition c<sub>E</sub>',unit:'',min:0,max:16,step:0.1,
+   desc:'kcat_exo ∝ e^(−c_E·φ). THE key lever: the oscillation hinges on ttRecJ. Anchor 10.3 = Sasaki Exo I (5.5× down at 20% PEG). ttRecJ is the #1 thing to measure.'},
+ {key:'c_polnick',group:'phys',label:'Pol / nick boost c<sub>P</sub>',unit:'',min:0,max:6,step:0.1,
+   desc:'kcat_pol ∝ e^(+c_P·φ). Crowding raises polymerase/nickase turnover (Akabayov), speeding both growth and predation.'},
+ {key:'G',group:'base',label:'Template G<sub>tot</sub>',unit:'nM',min:0,max:300,step:1,
    desc:'Baseline richness. Crowding interacts with this, so the on/off boundary depends on where you start.'},
- {key:'pol',tgt:'P',group:'base',label:'Polymerase (Bst)',unit:'nM',min:0,max:12,step:0.1,desc:'Builder enzyme level.'},
- {key:'rec',tgt:'P',group:'base',label:'Exonuclease (ttRecJ)',unit:'nM',min:0,max:80,step:0.5,desc:'Degrader enzyme level.'},
- {key:'bind',tgt:'EFF',group:'eff',label:'Excluded volume (binding↑)',unit:'',min:0,max:5,step:0.1,
-   desc:'How strongly crowding tightens hybridization. Raises k₁, k₂, b and lowers Km,P. Usually the dominant, most robust crowding effect.'},
- {key:'visc',tgt:'EFF',group:'eff',label:'Viscosity (diffusion↓)',unit:'',min:0,max:4,step:0.1,
-   desc:'How strongly crowding slows diffusion-limited association. Drags k₁, k₂ back down. Fights the excluded-volume boost.'},
- {key:'polk',tgt:'EFF',group:'eff',label:'Polymerase turnover',unit:'',min:-3,max:3,step:0.1,
-   desc:'Crowding effect on Bst catalysis (changes k₁, k₂). Negative = crowding hinders the polymerase.'},
- {key:'exok',tgt:'EFF',group:'eff',label:'Exonuclease turnover',unit:'',min:-3,max:3,step:0.1,
-   desc:'Crowding effect on ttRecJ catalysis (changes k_N, k_P). THE key unknown: the oscillation hinges on the exonuclease, so this slider matters most.'},
- {key:'km',tgt:'EFF',group:'eff',label:'Duplex tightening (Km↓)',unit:'',min:-2,max:4,step:0.1,
-   desc:'How much crowding lowers the exonuclease saturation point Km,P. Lower Km,P = easier to swamp = stronger tendency to oscillate.'},
+ {key:'rec',group:'base',label:'Exonuclease total (ttRecJ)',unit:'nM',min:0,max:80,step:0.5,
+   desc:'The conserved, saturating degrader — the oscillation engine. Set near 0 and the waves vanish.'},
+ {key:'polf',group:'base',label:'Polymerase / nick (kcat scale)',unit:'×',min:0.2,max:3,step:0.05,
+   desc:'Scales the catalytic turnover folded in from Bst + nickase. Sets the overall clock speed.'},
 ];
-function getv(k){return k.tgt==='C'?C:(k.tgt==='P'?Pbase[k.key]:EFF[k.key]);}
-function setv(k,v){if(k.tgt==='C')C=v;else if(k.tgt==='P')Pbase[k.key]=v;else EFF[k.key]=v;}
-function fmt(v){return (Math.abs(v)>=10?v.toFixed(0):v.toFixed(1));}
+function fmt(k,v){
+  if(k==='C'||k==='visc_b'||k==='spt_scale'||k==='polf')return v.toFixed(2);
+  if(k==='R_c'||k==='c_exo'||k==='c_polnick')return v.toFixed(1);
+  return (Math.abs(v)>=10?v.toFixed(0):v.toFixed(1));
+}
 function buildKnobs(){
   KNOBS.forEach(k=>{
     const box=document.getElementById('grp-'+k.group);
@@ -434,72 +601,96 @@ function buildKnobs(){
       <input type="range" id="s-${k.key}" min="${k.min}" max="${k.max}" step="${k.step}">
       <div class="desc">${k.desc}</div>`;
     box.appendChild(d);
-    d.querySelector('input').addEventListener('input',e=>{setv(k,parseFloat(e.target.value));
-      document.getElementById('v-'+k.key).textContent=fmt(getv(k))+(k.unit?' '+k.unit:'');requestUpdate();});
+    d.querySelector('input').addEventListener('input',e=>{
+      ST[k.key]=parseFloat(e.target.value);
+      document.getElementById('v-'+k.key).textContent=fmt(k.key,ST[k.key])+(k.unit?' '+k.unit:'');
+      requestUpdate();});
   });
 }
-function syncKnobs(){KNOBS.forEach(k=>{document.getElementById('s-'+k.key).value=getv(k);
-  document.getElementById('v-'+k.key).textContent=fmt(getv(k))+(k.unit?' '+k.unit:'');});}
+function syncKnobs(){KNOBS.forEach(k=>{
+  const s=document.getElementById('s-'+k.key); if(s)s.value=ST[k.key];
+  document.getElementById('v-'+k.key).textContent=fmt(k.key,ST[k.key])+(k.unit?' '+k.unit:'');});}
 
-// ---------- render ----------
+// load a crowder's literature defaults into the physical knobs
+function loadCrowder(key){
+  const c=CROWDERS[key]; ST.crowder=key;
+  ST.R_c=c.R_c; ST.spt_scale=c.spt_scale; ST.visc_b=c.visc_b;
+  ST.c_exo=c.c_exo; ST.c_polnick=c.c_polnick;
+  document.querySelectorAll('button[data-crowder]').forEach(b=>
+    b.classList.toggle('active',b.dataset.crowder===key));
+  syncKnobs(); requestUpdate();
+}
+
+// ----- render ----------------------------------------------------------------
 let dirty=true; function requestUpdate(){dirty=true;}
 function loop(){if(dirty){dirty=false;try{render();}catch(e){console.error(e);}}requestAnimationFrame(loop);}
 
-const Cmax=35;
+const Cmax=20;
 function computeSweep(){
-  const sw=[], n=28;
-  for(let i=0;i<=n;i++){const c=Cmax*i/n; const a=analyse(simulate(crowded(c),0.03,1200));
+  const cr=activeCrowder(), sw=[], n=16;
+  for(let i=0;i<=n;i++){const c=Cmax*i/n;
+    const a=analyse(simulate(elemSim(c,cr,ST.polf),ST.rec,ST.leakN,ST.leakP,ST.G,0.005,1400));
     sw.push({C:c,amp:a.amp,period:a.period,osc:a.osc});}
   return sw;
 }
 function render(){
-  const cp=crowded(C), dp=diluteParams();
-  const simC=simulate(cp), simD=simulate(dp);
+  const cr=activeCrowder();
+  const simC=simulate(elemSim(ST.C,cr,ST.polf),ST.rec,ST.leakN,ST.leakP,ST.G);
+  const simD=simulate(elemSim(0,cr,ST.polf),ST.rec,ST.leakN,ST.leakP,ST.G);
   plotTime(document.getElementById('ts'),simC,simD);
   plotPhase(document.getElementById('ph'),simC,simD);
-  const sw=computeSweep(); plotSweep(document.getElementById('sweep'),sw,Cmax);
+  const sw=computeSweep(); plotSweep(document.getElementById('sweep'),sw,Cmax,ST.C);
 
   const aC=analyse(simC), aD=analyse(simD);
   const pill=document.getElementById('state-pill');
   if(simC.blew){pill.className='pill fixed';pill.textContent='Unstable / out of range';}
   else if(aC.osc){pill.className='pill osc';pill.textContent='Oscillating';}
-  else{pill.className='pill fixed';pill.textContent='Steady state (no waves)';}
+  else{pill.className='pill fixed';pill.textContent='Steady state (Hopf — no waves)';}
   document.getElementById('m-period').textContent=aC.period?aC.period.toFixed(0)+' min':'none';
   document.getElementById('m-amp').textContent=aC.amp.toFixed(0)+' nM';
-  // deltas vs dilute
+  document.getElementById('m-phi').textContent=volFraction(ST.C,cr).toFixed(3);
   const dPer=document.getElementById('d-period'), dAmp=document.getElementById('d-amp');
-  if(aC.period&&aD.period){const d=aC.period-aD.period;
-    dPer.textContent='('+(d>=0?'+':'')+d.toFixed(0)+' vs dilute)';}
+  if(aC.period&&aD.period){const d=aC.period-aD.period;dPer.textContent='('+(d>=0?'+':'')+d.toFixed(0)+' vs dilute)';}
   else dPer.textContent='';
   const da=aC.amp-aD.amp; dAmp.textContent='('+(da>=0?'+':'')+da.toFixed(0)+' vs dilute)';
 
-  // sweep note: detect on/off crossing
-  const offToOn=sw.some((d,i)=>i>0&&!sw[i-1].osc&&d.osc);
+  // sweep note
   const onToOff=sw.some((d,i)=>i>0&&sw[i-1].osc&&!d.osc);
+  const offToOn=sw.some((d,i)=>i>0&&!sw[i-1].osc&&d.osc);
+  let cHopf=null; for(let i=1;i<sw.length;i++) if(sw[i-1].osc&&!sw[i].osc){cHopf=sw[i].C;break;}
   const note=document.getElementById('sweep-note');
-  if(offToOn&&!sw[0].osc) note.innerHTML='⭐ Crowding <b style="color:#37d29a">switches the oscillation ON</b> as C rises (crosses the Hopf boundary). That would be a headline result.';
-  else if(onToOff) note.innerHTML='⭐ Crowding <b style="color:#ff6b6b">switches the oscillation OFF</b> at high C. Also a clean, testable claim.';
-  else if(sw[0].osc) note.textContent='Oscillation persists across the whole range; read off how the period and amplitude drift with C.';
-  else note.textContent='No oscillation anywhere in this range, for these settings.';
+  if(onToOff&&cHopf!=null) note.innerHTML=`⭐ ${cr.label} <b style="color:#ff6b6b">switches the oscillation OFF</b> near <b>${cHopf.toFixed(1)}% w/v</b> (Hopf crossing) — a clean, falsifiable claim.`;
+  else if(offToOn) note.innerHTML='⭐ Crowding <b style="color:#37d29a">switches the oscillation ON</b> as C rises (crosses the Hopf boundary).';
+  else if(sw[0].osc&&sw[sw.length-1].osc) note.textContent='Oscillation persists across the whole range; read off how period and amplitude drift with C.';
+  else if(!sw.some(d=>d.osc)) note.textContent='No oscillation anywhere in this range, for these settings.';
+  else note.textContent='Mixed regime — drag C to see where the rhythm turns on or off.';
 
-  // effective constants readout
-  const f=cp._f;
+  // effective-constants readout (computed from the PHYSICAL, non-de-stiffened set)
+  const e=elemPhysical(ST.C,cr,ST.polf), e0=elemPhysical(0,cr,ST.polf);
+  const ef=effectiveConstants(e,ST.G), b0=effectiveConstants(e0,ST.G);
+  const phi=volFraction(ST.C,cr);
+  const fexo=Math.exp(-cr.c_exo*phi), fpol=Math.exp(cr.c_polnick*phi);
+  const visc=viscFactor(ST.C,cr,RADII.Exo);
+  const R=(x,r)=>{const v=x/r; const cls=v>=1?'up':'dn'; return `<code class="${cls}">${v.toFixed(2)}×</code>`;};
   document.getElementById('eff-readout').innerHTML=
-    `<b style="color:var(--ink)">Effective rate constants at C=${C.toFixed(1)}%</b> `+
-    `(factor vs dilute): binding ×<code>${f.B.toFixed(2)}</code> &nbsp; viscosity ×<code>${f.V.toFixed(2)}</code> &nbsp; `+
-    `pol ×<code>${f.Pp.toFixed(2)}</code> &nbsp; exo ×<code>${f.Ex.toFixed(2)}</code> &nbsp; Km ×<code>${f.Km.toFixed(2)}</code><br>`+
-    `&rarr; k₁ <code>${(cp.k1/BASE.k1).toFixed(2)}×</code> &nbsp; k₂ <code>${(cp.k2/BASE.k2).toFixed(2)}×</code> &nbsp; `+
-    `k_N,k_P <code>${(cp.kN/BASE.kN).toFixed(2)}×</code> &nbsp; Km,P <code>${(cp.KmP/BASE.KmP).toFixed(2)}×</code> `+
-    `(${cp.KmP.toFixed(0)} nM)`;
+    `<b>Physical channels at C=${ST.C.toFixed(2)}% (φ=${phi.toFixed(3)})</b><span class="sep">·</span>`+
+    `excluded-vol μ_ex(Exo)=<code>${sptMuEx(RADII.Exo,phi,cr).toFixed(2)}</code> RT<span class="sep">·</span>`+
+    `viscosity(Exo) ×<code>${visc.toFixed(2)}</code><span class="sep">·</span>`+
+    `pol kcat ×<code class="up">${fpol.toFixed(2)}</code><span class="sep">·</span>`+
+    `exo kcat ×<code class="dn">${fexo.toFixed(2)}</code><br>`+
+    `<b>Emergent effective constants</b> (× dilute): `+
+    `k₁ ${R(ef.k1,b0.k1)}<span class="sep">·</span>k₂ ${R(ef.k2,b0.k2)}<span class="sep">·</span>`+
+    `k_N ${R(ef.kN,b0.kN)}<span class="sep">·</span>k_P ${R(ef.kP,b0.kP)}<span class="sep">·</span>`+
+    `Km,P ${R(ef.KmP,b0.KmP)} (${ef.KmP.toFixed(0)} nM)<span class="sep">·</span>b ${R(ef.b,b0.b)}`;
 }
 
-document.querySelectorAll('button[data-preset]').forEach(b=>{
-  b.addEventListener('click',()=>{const pr=PRESETS[b.dataset.preset];
-    C=pr.C; EFF={bind:pr.bind,visc:pr.visc,polk:pr.polk,exok:pr.exok,km:pr.km};
-    syncKnobs(); requestUpdate();});
-});
+document.querySelectorAll('button[data-crowder]').forEach(b=>
+  b.addEventListener('click',()=>loadCrowder(b.dataset.crowder)));
+document.querySelector('button[data-preset="dilute"]').addEventListener('click',()=>{
+  ST.C=0; syncKnobs(); requestUpdate();});
 window.addEventListener('resize',requestUpdate);
-buildKnobs(); syncKnobs(); loop();
+
+buildKnobs(); loadCrowder('PEG8000'); ST.C=10; syncKnobs(); loop();
 </script>
 </body>
 </html>
