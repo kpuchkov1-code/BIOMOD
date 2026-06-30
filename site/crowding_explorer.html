@@ -168,6 +168,27 @@
   .eqsub b{color:var(--ink)}
   .eqsub .m{font-size:12.5px}
   .term.leak{border-left:3px solid var(--crowd)}
+
+  /* plain-language key for the equation symbols */
+  .eqkey{margin-top:14px;background:#0b1018;border:1px solid var(--line);
+    border-radius:12px;padding:13px 16px;font-size:12.5px;color:var(--muted);
+    line-height:1.85}
+  .eqkey h4{margin:0 0 7px;font-size:12px;text-transform:uppercase;
+    letter-spacing:.08em;color:var(--accent);font-weight:700}
+  .eqkey b{color:var(--ink)}
+  .eqkey .sym{display:inline-block;font-family:"Cambria Math",Georgia,serif;
+    font-style:italic;color:var(--ink);min-width:30px}
+  .eqkey .amber{color:var(--crowd);font-weight:700;font-style:normal}
+  .eqkey .grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px 26px}
+  @media(max-width:760px){.eqkey .grid2{grid-template-columns:1fr}}
+
+  /* "how to read this" caption under the sweep plot */
+  .readcap{margin-top:10px;background:#0b1018;border:1px solid var(--line);
+    border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--muted);
+    line-height:1.65}
+  .readcap b{color:var(--ink)} .readcap .amp{color:var(--cycle);font-weight:700}
+  .readcap .per{color:var(--accent);font-weight:700}
+  .readcap .hopf{color:var(--warn);font-weight:700}
 </style>
 </head>
 <body>
@@ -218,6 +239,22 @@
       &nbsp;<span style="color:var(--faint)">Under fast-binding QSSA these seven equations collapse to the paper's reduced
       two-variable form shown on the <a href="model_explorer.html">Dilute model</a> page.</span>
     </div>
+  </div>
+
+  <div class="eqkey">
+    <h4>How to read the equations</h4>
+    <div class="grid2">
+      <div><span class="sym">N, P</span> = free prey and predator strands (what we plot)</div>
+      <div><span class="sym">G</span> = free template; <span class="sym">E</span> = free exonuclease (ttRecJ)</div>
+      <div><span class="sym">C<sub>NG</sub></span> = prey stuck to template (a complex); likewise C<sub>NP</sub>, C<sub>NE</sub>, C<sub>PE</sub></div>
+      <div><b>+2 k<sub>cat</sub></b> = each catalytic event makes <b>two</b> strands from one</div>
+      <div><span class="amber">k<sub>on</sub></span> = stick together, <span class="amber">k<sub>off</sub></span> = fall apart, <span class="amber">k<sub>cat</sub></span> = chemistry fires</div>
+      <div><span class="sym">λ</span> = tiny constant background "leak" that keeps the rhythm robust</div>
+    </div>
+    <div style="margin-top:8px;color:var(--faint)">Each boxed term is simply
+      <b>“what happens when N (or P) meets a given partner”</b>: it binds
+      (−k<sub>on</sub>), may fall off (+k<sub>off</sub>), and may react (+2k<sub>cat</sub>).
+      The <span class="amber">amber</span> rate constants are the ones crowding changes.</div>
   </div>
 
   <div class="chan">
@@ -286,13 +323,25 @@
     </div>
 
     <div class="card plotcard">
-      <div class="ct"><h3>⭐ Prediction: sweep crowder concentration</h3>
+      <div class="ct"><h3>⭐ Prediction: does the rhythm survive as you add crowder?</h3>
         <span class="legend">
-          <span><i class="sw" style="background:var(--cycle)"></i>amplitude</span>
-          <span><i class="sw" style="background:var(--accent)"></i>period</span>
-          <span><i class="sw" style="background:rgba(245,167,107,.5)"></i>oscillating band</span>
+          <span><i class="sw" style="background:var(--cycle)"></i>wave size (amplitude)</span>
+          <span><i class="sw" style="background:var(--accent)"></i>wave period</span>
+          <span><i class="sw" style="background:rgba(245,167,107,.5)"></i>still oscillating</span>
         </span></div>
       <canvas id="sweep"></canvas>
+      <div class="readcap">
+        <b>How to read this graph.</b> The x-axis is crowder concentration; each
+        point is a <b>separate full simulation</b> at that level. The
+        <span class="amp">green line</span> is the <b>wave size</b> (left axis) and
+        the <span class="per">blue line</span> is the <b>period</b> (right axis).
+        The <span style="color:var(--crowd)">shaded band</span> is where waves still
+        exist. Where the green line falls to <b>zero</b>, crowding has switched the
+        oscillation <span class="hopf">OFF</span> — that crossing is the
+        <span class="hopf">Hopf point</span>, the headline result. <b>PEG 8000</b>
+        crosses it (~10–12%); <b>Ficoll 400</b> never does. The white
+        <b>“now”</b> line is your current C slider.
+      </div>
       <div class="hint" id="sweep-note" style="margin-top:8px;color:var(--faint);font-size:12px"></div>
     </div>
 
@@ -516,6 +565,9 @@ function analyse(sim){
 
 // ----- plotting --------------------------------------------------------------
 const GRID='#243150', AXIS='#8294b4', PANEL='#0e1521';
+const AXISLBL='#c3cee6';                       // brighter colour for axis text
+const TICKFONT='bold 11px Inter,sans-serif';   // bolder tick numbers
+const TITLEFONT='bold 13px Inter,sans-serif';  // bolder axis titles
 function setup(cv){const r=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
   cv.width=Math.round(w*r);cv.height=Math.round(h*r);const c=cv.getContext('2d');
   c.setTransform(r,0,0,r,0,0);return{ctx:c,w,h};}
@@ -527,15 +579,15 @@ function plotTime(cv,sim,dil){
   const xMax=sim.T, yMax=niceMax(Math.max(safeMax(sim.Ns),safeMax(sim.Ps),safeMax(dil.Ps))*1.1);
   const X=t=>m.l+pw*t/xMax, Y=v=>m.t+ph*(1-v/yMax);
   ctx.clearRect(0,0,w,h); ctx.fillStyle=PANEL; ctx.fillRect(m.l,m.t,pw,ph);
-  ctx.font='11px Inter,sans-serif';
+  ctx.font=TICKFONT;
   for(let i=0;i<=5;i++){const v=yMax*i/5,y=Y(v);ctx.strokeStyle=GRID;ctx.beginPath();
-    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.fillStyle=AXIS;
+    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.fillStyle=AXISLBL;
     ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(v.toFixed(0),m.l-6,y);}
   ctx.textBaseline='alphabetic';
-  for(let i=0;i<=6;i++){const t=xMax*i/6,x=X(t);ctx.fillStyle=AXIS;ctx.textAlign='center';
+  for(let i=0;i<=6;i++){const t=xMax*i/6,x=X(t);ctx.fillStyle=AXISLBL;ctx.textAlign='center';
     ctx.fillText(t.toFixed(0),x,h-12);}
-  ctx.fillStyle=AXIS;ctx.textAlign='center';ctx.fillText('time (min)',m.l+pw/2,h-1);
-  ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.font=TITLEFONT;ctx.fillStyle=AXISLBL;ctx.textAlign='center';ctx.fillText('time (min)',m.l+pw/2,h-1);
+  ctx.save();ctx.translate(13,m.t+ph/2);ctx.rotate(-Math.PI/2);
   ctx.fillText('concentration (nM)',0,0);ctx.restore();
   ctx.setLineDash([4,4]); ctx.strokeStyle='#5a6b8a'; ctx.lineWidth=1.2; ctx.beginPath();
   dil.ts.forEach((t,i)=>{const x=X(t),y=Y(dil.Ps[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
@@ -551,15 +603,15 @@ function plotPhase(cv,sim,dil){
   const yMax=niceMax(Math.max(safeMax(sim.Ps),safeMax(dil.Ps))*1.1);
   const X=v=>m.l+pw*v/xMax, Y=v=>m.t+ph*(1-v/yMax);
   ctx.clearRect(0,0,w,h); ctx.fillStyle=PANEL; ctx.fillRect(m.l,m.t,pw,ph);
-  ctx.font='11px Inter,sans-serif';
+  ctx.font=TICKFONT;
   for(let i=0;i<=5;i++){const v=yMax*i/5,y=Y(v);ctx.strokeStyle=GRID;ctx.beginPath();
-    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.fillStyle=AXIS;
+    ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.fillStyle=AXISLBL;
     ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(v.toFixed(0),m.l-6,y);}
   ctx.textBaseline='alphabetic';
-  for(let i=0;i<=5;i++){const v=xMax*i/5,x=X(v);ctx.fillStyle=AXIS;ctx.textAlign='center';
+  for(let i=0;i<=5;i++){const v=xMax*i/5,x=X(v);ctx.fillStyle=AXISLBL;ctx.textAlign='center';
     ctx.fillText(v.toFixed(0),x,h-14);}
-  ctx.fillStyle=AXIS;ctx.textAlign='center';ctx.fillText('Prey N (nM)',m.l+pw/2,h-1);
-  ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.font=TITLEFONT;ctx.fillStyle=AXISLBL;ctx.textAlign='center';ctx.fillText('Prey N (nM)',m.l+pw/2,h-1);
+  ctx.save();ctx.translate(13,m.t+ph/2);ctx.rotate(-Math.PI/2);
   ctx.fillText('Predator P (nM)',0,0);ctx.restore();
   const draw=(s,col,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineJoin='round';ctx.beginPath();
     s.Ns.forEach((n,i)=>{const x=X(n),y=Y(s.Ps[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();};
@@ -576,28 +628,47 @@ function plotSweep(cv,sw,Cmax,Cnow){
   ctx.fillStyle='rgba(245,167,107,.15)';
   sw.forEach((d,i)=>{ if(d.osc){ const x0=X(i>0?(sw[i-1].C+d.C)/2:d.C);
     const x1=X(i<sw.length-1?(sw[i+1].C+d.C)/2:d.C); ctx.fillRect(x0,m.t,Math.max(1,x1-x0),ph);} });
-  ctx.font='11px Inter,sans-serif';
+  ctx.font=TICKFONT;
   for(let i=0;i<=5;i++){const y=m.t+ph*i/5; ctx.strokeStyle=GRID;ctx.beginPath();
     ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();
     ctx.fillStyle='#37d29a';ctx.textAlign='right';ctx.textBaseline='middle';
     ctx.fillText((aMax*(1-i/5)).toFixed(0),m.l-6,y);
     ctx.fillStyle='#8b9cff';ctx.textAlign='left';ctx.fillText((tMax*(1-i/5)).toFixed(0),w-m.r+6,y);}
   ctx.textBaseline='alphabetic';
-  for(let i=0;i<=6;i++){const c=Cmax*i/6,x=X(c);ctx.fillStyle=AXIS;ctx.textAlign='center';
+  for(let i=0;i<=6;i++){const c=Cmax*i/6,x=X(c);ctx.fillStyle=AXISLBL;ctx.textAlign='center';
     ctx.fillText(c.toFixed(0),x,h-12);}
-  ctx.fillStyle=AXIS;ctx.textAlign='center';ctx.fillText('crowder C (% w/v)',m.l+pw/2,h-1);
+  ctx.font=TITLEFONT;
+  ctx.fillStyle=AXISLBL;ctx.textAlign='center';ctx.fillText('crowder C (% w/v)',m.l+pw/2,h-1);
   ctx.fillStyle='#37d29a';ctx.save();ctx.translate(12,m.t+ph/2);ctx.rotate(-Math.PI/2);
-  ctx.fillText('amplitude (nM)',0,0);ctx.restore();
-  ctx.fillStyle='#8b9cff';ctx.save();ctx.translate(w-8,m.t+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText('wave size (nM)',0,0);ctx.restore();
+  ctx.fillStyle='#8b9cff';ctx.save();ctx.translate(w-7,m.t+ph/2);ctx.rotate(-Math.PI/2);
   ctx.fillText('period (min)',0,0);ctx.restore();
+  // period line (blue) — only where it oscillates
   ctx.strokeStyle='#8b9cff';ctx.lineWidth=1.6;ctx.beginPath();let started=false;
   sw.forEach(d=>{ if(d.osc&&d.period){const x=X(d.C),y=YT(d.period);started?ctx.lineTo(x,y):ctx.moveTo(x,y);started=true;} else started=false;});
   ctx.stroke();
+  // amplitude line (green)
   ctx.strokeStyle='#37d29a';ctx.lineWidth=2;ctx.beginPath();
   sw.forEach((d,i)=>{const x=X(d.C),y=YA(d.amp);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
+  // Hopf marker — first place the waves switch OFF (amplitude line hits zero)
+  let cHopf=null;
+  for(let i=1;i<sw.length;i++) if(sw[i-1].osc&&!sw[i].osc){
+    const a0=sw[i-1].amp, a1=sw[i].amp, f=(a0-2)/Math.max(a0-a1,1e-6);
+    cHopf=sw[i-1].C+(sw[i].C-sw[i-1].C)*Math.min(Math.max(f,0),1); break; }
+  if(cHopf!=null){
+    const xh=X(cHopf);
+    ctx.strokeStyle='#ffcf5c';ctx.lineWidth=1.6;ctx.setLineDash([6,4]);
+    ctx.beginPath();ctx.moveTo(xh,m.t);ctx.lineTo(xh,m.t+ph);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#ffcf5c';ctx.textAlign=cHopf>Cmax*0.7?'right':'left';
+    ctx.font='bold 11.5px Inter,sans-serif';
+    ctx.fillText('✕ Hopf: waves off ('+cHopf.toFixed(1)+'%)',
+      cHopf>Cmax*0.7?xh-6:xh+6, m.t+ph-8);
+  }
+  // current-C marker
   const xc=X(Cnow); ctx.strokeStyle='#eef2fb';ctx.setLineDash([5,4]);ctx.lineWidth=1.3;
   ctx.beginPath();ctx.moveTo(xc,m.t);ctx.lineTo(xc,m.t+ph);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle='#eef2fb';ctx.textAlign='center';ctx.fillText('now',xc,m.t+10);
+  ctx.fillStyle='#eef2fb';ctx.textAlign='center';ctx.font='bold 11.5px Inter,sans-serif';
+  ctx.fillText('now',xc,m.t+11);
 }
 
 // ----- knobs -----------------------------------------------------------------
