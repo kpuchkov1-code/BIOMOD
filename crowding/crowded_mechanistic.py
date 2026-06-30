@@ -367,14 +367,19 @@ def plot_predictions(wt_grid, outfile, use_ion=False):
         ax1.plot(wt_grid, per, "o-", ms=3, color=col, label=CROWDERS[key]["label"])
         ax2.plot(wt_grid, amp, "o-", ms=3, color=col, label=CROWDERS[key]["label"])
     ax1.set_xlabel("crowder (% w/v)"); ax1.set_ylabel("period (min)")
-    ax1.set_title("Mechanistic model: predicted period"); ax1.legend(frameon=False)
+    ax1.set_title("Mechanistic model: predicted period")
     ax2.axhline(1.0, color="k", lw=0.7, ls="--")
     ax2.set_xlabel("crowder (% w/v)")
     ax2.set_ylabel("predator amplitude (nM, p-p)")
-    ax2.set_title("Predicted amplitude (Hopf on/off)"); ax2.legend(frameon=False)
+    ax2.set_title("Predicted amplitude (Hopf on/off)")
+    # one shared legend BELOW the plots so it never sits on top of the curves
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=2, frameon=False,
+               fontsize=10, bbox_to_anchor=(0.5, -0.01))
     fig.suptitle("Crowded Fujii PP1 -- mechanistic network "
                  "(PEG 8000 vs Ficoll 400)", fontsize=11)
-    fig.tight_layout(); fig.savefig(outfile, dpi=140)
+    fig.tight_layout(rect=[0, 0.06, 1, 1])
+    fig.savefig(outfile, dpi=140, bbox_inches="tight")
     print(f"saved {outfile}")
 
 
@@ -391,9 +396,14 @@ def plot_timeseries(outfile, conditions):
         ax.plot(t[mask], sol.y[1][mask], color="#d62728", lw=1.4, label="predator P")
         lab = "dilute" if wt == 0 else f"{CROWDERS[key]['label']} {wt}% w/v"
         ax.set_title(lab); ax.set_xlabel("time (min)")
-        ax.set_ylabel("conc (nM)"); ax.legend(frameon=False)
+        ax.set_ylabel("conc (nM)")
+    # one shared legend below all panels, clear of the curves
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=2, frameon=False,
+               fontsize=10, bbox_to_anchor=(0.5, -0.02))
     fig.suptitle("Mechanistic network -- settled dynamics", fontsize=11)
-    fig.tight_layout(); fig.savefig(outfile, dpi=140)
+    fig.tight_layout(rect=[0, 0.07, 1, 1])
+    fig.savefig(outfile, dpi=140, bbox_inches="tight")
     print(f"saved {outfile}")
 
 

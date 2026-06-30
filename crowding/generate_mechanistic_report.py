@@ -162,6 +162,19 @@ def make_table(headers, rows, widths=None):
         for j, w in enumerate(widths):
             for r in t.rows:
                 r.cells[j].width = Inches(w)
+    # keep the table from breaking across a page boundary: no row may split
+    # mid-row, and every row but the last is glued to the next so the whole
+    # table moves as one block to the next page if it does not fit.
+    n = len(t.rows)
+    for ri, row in enumerate(t.rows):
+        trPr = row._tr.get_or_add_trPr()
+        trPr.append(OxmlElement('w:cantSplit'))
+        if ri == 0:
+            trPr.append(OxmlElement('w:tblHeader'))   # repeat header if it spans
+        if ri < n - 1:
+            for cell in row.cells:
+                for para in cell.paragraphs:
+                    para.paragraph_format.keep_with_next = True
     return t
 
 
@@ -246,12 +259,56 @@ omath(r"\frac{dC_{NP}}{dt} = k_{on}^{NP}NP - k_{off}^{NP}C_{NP} - k_{cat}^{p}C_{
 omath(r"\frac{dC_{NE}}{dt} = k_{on}^{eN}NE - k_{off}^{eN}C_{NE} - k_{cat}^{eN}C_{NE}")
 omath(r"\frac{dC_{PE}}{dt} = k_{on}^{eP}PE - k_{off}^{eP}C_{PE} - k_{cat}^{eP}C_{PE}")
 
-body("Reading one term: in the prey equation, -k_{on}^{NG}NG is prey binding "
-     "the template (it leaves the free pool), +k_{off}^{NG}C_{NG} is that "
-     "complex falling back apart, and +2k_{cat}^{g}C_{NG} is the catalytic "
-     "step that copies the prey, giving two strands where there was one. "
-     "lambda_N and lambda_P are a tiny constant background synthesis ('leak') "
-     "that keeps the rhythm robust (Section 8).")
+heading("2.1  What each symbol means", 2)
+bullet("free prey and predator strands. These are the two populations we plot.",
+       "N, P:  ")
+bullet("the free template strand that prey is copied on.", "G:  ")
+bullet("the free exonuclease (ttRecJ), the single enzyme that degrades both "
+       "prey and predator.", "E:  ")
+bullet("a complex, meaning two molecules currently bound together. For example "
+       "C_{NG} is one prey strand stuck to the template, and C_{PE} is a "
+       "predator strand held by the enzyme.",
+       "C_{NG}, C_{NP}, C_{NE}, C_{PE}:  ")
+bullet("the on-rate (how fast two molecules bind), the off-rate (how fast a "
+       "complex falls back apart), and the catalytic rate (how fast a bound "
+       "complex does its chemistry). The superscript names which pair it "
+       "belongs to.", "k_{on}, k_{off}, k_{cat}:  ")
+bullet("a small constant background synthesis of prey and predator (a 'leak'). "
+       "It is tiny next to the roughly 130 nM swings but it keeps the rhythm "
+       "from collapsing (Section 8).", "lambda_N, lambda_P:  ")
+bullet("the total exonuclease and total template put into the tube (fixed "
+       "numbers, not variables).", "rec, G_{tot}:  ")
+
+heading("2.2  What each term in the prey and predator equations means", 2)
+body("Take the prey equation dN/dt. Its terms come in groups, one group per "
+     "thing prey can do:")
+bullet("prey binds the template and leaves the free pool (-k_{on}^{NG}NG), or "
+       "that complex falls back apart and returns the prey (+k_{off}^{NG}C_{NG}).",
+       "With template (bind/unbind):  ")
+bullet("the polymerase and nickase copy the bound prey and release the product "
+       "as two strands. One prey went in, two come out, so this is the net "
+       "growth of prey.", "Growth (+2k_{cat}^{g}C_{NG}):  ")
+bullet("prey binds and unbinds the predator, because the predator uses prey as "
+       "its template (-k_{on}^{NP}NP + k_{off}^{NP}C_{NP}). Prey is consumed "
+       "when this complex goes on to make predator (in the predator equation).",
+       "With predator:  ")
+bullet("prey binds and unbinds the exonuclease before being cut "
+       "(-k_{on}^{eN}NE + k_{off}^{eN}C_{NE}).", "With the enzyme:  ")
+bullet("the small constant background (+lambda_N).", "Leak:  ")
+body("The predator equation dP/dt reads the same way: it binds and unbinds prey "
+     "and replicates (+2k_{cat}^{p}C_{NP}, each event making two predator "
+     "strands), binds and unbinds the enzyme (-k_{on}^{eP}PE + k_{off}^{eP}"
+     "C_{PE}), and has its own leak (+lambda_P).")
+
+heading("2.3  What the complex equations mean", 2)
+body("Each complex is made when its two partners bind, and is removed in two "
+     "ways: it can simply fall apart, or it can react. So every complex follows "
+     "the same shape, made minus (unbind plus react). For the prey on template:")
+omath(r"\frac{dC_{NG}}{dt} = k_{on}^{NG}NG - \left(k_{off}^{NG} + k_{cat}^{g}\right)C_{NG}")
+body("and the other three complexes are identical in form. The free enzyme is "
+     "not its own equation; it is fixed at every instant by conservation, "
+     "E = rec - C_{NE} - C_{PE}, which is what makes the enzyme a shared, "
+     "limited resource and drives the oscillation.")
 
 # the crowding rules (second shaded line)
 banner2 = doc.add_paragraph()
@@ -281,6 +338,24 @@ body("and the catalytic constants shift by enzyme class (polymerase and nickase 
      "up, exonuclease down):")
 omath(r"k_{cat}^{g},\,k_{cat}^{p} \;\to\; k_{cat}\,e^{+c_{P}\varphi}, "
       r"\qquad k_{cat}^{eN},\,k_{cat}^{eP} \;\to\; k_{cat}\,e^{-c_{E}\varphi}")
+body("Reading each crowding rule:")
+bullet("the fraction of the volume taken up by crowder. It is the one knob the "
+       "whole study turns. v-bar is the crowder's specific volume and C is its "
+       "weight percent.", "phi (volume fraction):  ")
+bullet("the binding strength. K^{0} is its dilute value; the exponential makes "
+       "binding stronger as crowding squeezes the two partners together "
+       "(Section 6.1).", "K(phi):  ")
+bullet("the on-rate, slowed by dividing by the effective viscosity eta_eff: "
+       "thicker solution, slower meeting (Section 6.2). The off-rate k_{off} is "
+       "then set to k_{on}/K so the kinetics and the binding strength stay "
+       "consistent.", "k_{on}(phi):  ")
+bullet("how much the binding strength changes, equal to the extra room the "
+       "compact complex gives back to the crowders (Section 6.1).",
+       "Delta-Delta-G_{EV}:  ")
+bullet("the catalytic steps. Crowding speeds the polymerase and nickase up "
+       "(factor e^{+c_{P} phi}) and slows the exonuclease down (factor "
+       "e^{-c_{E} phi}). c_{P} and c_{E} are how strong each effect is, taken "
+       "from enzyme measurements.", "k_{cat} factors:  ")
 body("mu_ex and eta_eff are defined in Section 6. At zero crowder (phi = 0) "
      "every rate constant returns to its dilute value (Table in Section 5) and "
      "the model reproduces the measured oscillation: period about 90 minutes, "
