@@ -48,7 +48,8 @@
   .frac .den{padding:1px 7px 0;line-height:1.35}
 
   /* physical-channel chips */
-  .chan{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+  .chan{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  @media(max-width:760px){.chan{grid-template-columns:1fr}}
   .chip{display:flex;align-items:center;gap:8px;background:#0b1018;
     border:1px solid var(--line);border-radius:10px;padding:8px 13px;font-size:12.5px}
   .chip .dot{width:9px;height:9px;border-radius:50%}
@@ -69,9 +70,11 @@
   button.primary{background:linear-gradient(135deg,var(--crowd),#e8895a);
     border-color:transparent;color:#0d1119;font-weight:700}
   button.primary:hover{filter:brightness(1.08)}
-  button.active{border-color:var(--crowd);background:#2a2016;color:var(--crowd)}
+  button.active{border-color:var(--crowd);background:#2a2016;color:var(--crowd);
+    font-weight:700;box-shadow:inset 0 0 0 1px rgba(245,167,107,.4)}
 
-  .group{margin-bottom:15px}
+  .group{margin-bottom:15px;padding-top:14px;border-top:1px solid var(--line)}
+  .group:first-of-type{padding-top:0;border-top:none}
   .group .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.1em;
     color:var(--accent);font-weight:700;margin-bottom:1px}
   .group.crowd .eyebrow{color:var(--crowd)}
@@ -176,11 +179,17 @@
   .eqkey h4{margin:0 0 7px;font-size:12px;text-transform:uppercase;
     letter-spacing:.08em;color:var(--accent);font-weight:700}
   .eqkey b{color:var(--ink)}
-  .eqkey .sym{display:inline-block;font-family:"Cambria Math",Georgia,serif;
-    font-style:italic;color:var(--ink);min-width:30px}
-  .eqkey .amber{color:var(--crowd);font-weight:700;font-style:normal}
-  .eqkey .grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px 26px}
+  .eqkey .grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px}
   @media(max-width:760px){.eqkey .grid2{grid-template-columns:1fr}}
+  .eqkey .it{display:grid;grid-template-columns:74px 1fr;gap:11px;
+    align-items:baseline;line-height:1.45}
+  .eqkey .it+.it{padding-top:6px;border-top:1px solid rgba(42,54,80,.55)}
+  .eqkey .sym{font-family:"Cambria Math",Georgia,serif;font-style:italic;
+    color:var(--ink);font-size:13px}
+  .eqkey .def{color:var(--muted)}
+  .eqkey .amber{color:var(--crowd);font-weight:700;font-style:normal}
+  .eqkey-foot{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);
+    color:var(--faint);line-height:1.55}
 
   /* "how to read this" caption under the sweep plot */
   .readcap{margin-top:10px;background:#0b1018;border:1px solid var(--line);
@@ -244,17 +253,17 @@
   <div class="eqkey">
     <h4>How to read the equations</h4>
     <div class="grid2">
-      <div><span class="sym">N, P</span> = free prey and predator strands (what we plot)</div>
-      <div><span class="sym">G</span> = free template; <span class="sym">E</span> = free exonuclease (ttRecJ)</div>
-      <div><span class="sym">C<sub>NG</sub></span> = prey stuck to template (a complex); likewise C<sub>NP</sub>, C<sub>NE</sub>, C<sub>PE</sub></div>
-      <div><b>+2 k<sub>cat</sub></b> = each catalytic event makes <b>two</b> strands from one</div>
-      <div><span class="amber">k<sub>on</sub></span> = stick together, <span class="amber">k<sub>off</sub></span> = fall apart, <span class="amber">k<sub>cat</sub></span> = chemistry fires</div>
-      <div><span class="sym">λ</span> = tiny constant background "leak" that keeps the rhythm robust</div>
+      <div class="it"><span class="sym">N, P</span><span class="def">free prey and predator strands — the two curves we plot</span></div>
+      <div class="it"><span class="sym">G, E</span><span class="def">free template and free exonuclease (ttRecJ)</span></div>
+      <div class="it"><span class="sym">C<sub>NG</sub>…</span><span class="def">a bound complex (here, prey stuck to the template)</span></div>
+      <div class="it"><span class="sym amber">k<sub>on</sub>, k<sub>off</sub></span><span class="def">stick together / fall apart — crowding moves these</span></div>
+      <div class="it"><span class="sym amber">k<sub>cat</sub></span><span class="def">the chemistry fires; the <b>+2</b> means one strand becomes two</span></div>
+      <div class="it"><span class="sym">λ</span><span class="def">tiny constant background "leak" that keeps the rhythm robust</span></div>
     </div>
-    <div style="margin-top:8px;color:var(--faint)">Each boxed term is simply
-      <b>“what happens when N (or P) meets a given partner”</b>: it binds
-      (−k<sub>on</sub>), may fall off (+k<sub>off</sub>), and may react (+2k<sub>cat</sub>).
-      The <span class="amber">amber</span> rate constants are the ones crowding changes.</div>
+    <div class="eqkey-foot">Each boxed term above is just
+      <b>what happens when N or P meets a partner</b>: it binds (−k<sub>on</sub>),
+      may fall off (+k<sub>off</sub>), and may react (+2k<sub>cat</sub>). The
+      <span class="amber">amber</span> constants are the ones crowding changes.</div>
   </div>
 
   <div class="chan">
@@ -277,7 +286,7 @@
   <!-- ============ CONTROLS ============ -->
   <div class="controls">
     <div class="btns">
-      <button class="primary" data-crowder="PEG8000">PEG 8000 (coil)</button>
+      <button data-crowder="PEG8000">PEG 8000 (coil)</button>
       <button data-crowder="FICOLL400">Ficoll 400 (sphere)</button>
       <button data-preset="dilute">↺ Dilute (C=0)</button>
     </div>
@@ -345,7 +354,11 @@
       <div class="hint" id="sweep-note" style="margin-top:8px;color:var(--faint);font-size:12px"></div>
     </div>
 
-    <div class="card effbox" id="eff-readout">Effective constants: ...</div>
+    <div class="card effbox">
+      <div class="ct"><h3>Where the dilute model's six rate constants went</h3>
+        <span class="hint">computed live from the elementary steps + crowding — not hand-set</span></div>
+      <div id="eff-readout">Effective constants: ...</div>
+    </div>
 
     <div class="card explain">
       <h3>Reading the mechanistic model</h3>
@@ -425,9 +438,9 @@ const ST={
   crowder:'PEG8000', C:10,                 // % w/v
   R_c:3.4, spt_scale:1.0, visc_b:1.61, c_exo:10.3, c_polnick:3.0,  // physical knobs
   G:140, rec:32.5, polf:1.0,               // baseline
+  N0:10, P0:30,                            // starting amounts
   leakN:0.02, leakP:0.006,
 };
-const N0=10, P0=30;
 
 // merge the editable physical knobs onto the selected crowder's fixed props
 function activeCrowder(){
@@ -503,7 +516,7 @@ function effectiveConstants(e,G){
 function simulate(e,rec,leakN,leakP,G,dt,T){
   dt=dt||0.004; T=T||1600;
   const steps=Math.round(T/dt), CAP=1e7;
-  let N=N0,P=P0,Gf=G,cNG=0,cNP=0,cNE=0,cPE=0,blew=false;
+  let N=ST.N0,P=ST.P0,Gf=G,cNG=0,cNP=0,cNE=0,cPE=0,blew=false;
   const kgNG=e.kon_NG,kfNG=e.koff_NG,kcg=e.kcat_g,
         kgNP=e.kon_NP,kfNP=e.koff_NP,kcp=e.kcat_p,
         keN=e.kon_eN,kfeN=e.koff_eN,kceN=e.kcat_eN,
@@ -667,8 +680,15 @@ function plotSweep(cv,sw,Cmax,Cnow){
   // current-C marker
   const xc=X(Cnow); ctx.strokeStyle='#eef2fb';ctx.setLineDash([5,4]);ctx.lineWidth=1.3;
   ctx.beginPath();ctx.moveTo(xc,m.t);ctx.lineTo(xc,m.t+ph);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle='#eef2fb';ctx.textAlign='center';ctx.font='bold 11.5px Inter,sans-serif';
-  ctx.fillText('now',xc,m.t+11);
+  // label sits beside the line (never on top of it) with a small backing pill
+  ctx.font='bold 11.5px Inter,sans-serif';
+  const lbl='now', tw=ctx.measureText(lbl).width;
+  const onRight=xc < (m.l+pw-tw-14);
+  const tx=onRight?xc+5:xc-5;
+  const bx=onRight?tx-3:tx-tw-3;
+  ctx.fillStyle='rgba(13,17,25,.82)'; ctx.fillRect(bx,m.t+2,tw+6,15);
+  ctx.fillStyle='#eef2fb'; ctx.textAlign=onRight?'left':'right'; ctx.textBaseline='alphabetic';
+  ctx.fillText(lbl,tx,m.t+13);
 }
 
 // ----- knobs -----------------------------------------------------------------
@@ -691,6 +711,10 @@ const KNOBS=[
    desc:'The conserved, saturating degrader — the oscillation engine. Set near 0 and the waves vanish.'},
  {key:'polf',group:'base',label:'Polymerase / nick (kcat scale)',unit:'×',min:0.2,max:3,step:0.05,
    desc:'Scales the catalytic turnover folded in from Bst + nickase. Sets the overall clock speed.'},
+ {key:'N0',group:'base',label:'Initial prey N<sub>0</sub>',unit:'nM',min:0,max:200,step:1,
+   desc:'Where prey starts. The system settles to the same attractor regardless, so this mainly changes the warm-up.'},
+ {key:'P0',group:'base',label:'Initial predator P<sub>0</sub>',unit:'nM',min:0,max:200,step:1,
+   desc:'Where predator starts. A high value makes the phase loop spiral inward instead of outward.'},
 ];
 function fmt(k,v){
   if(k==='C'||k==='visc_b'||k==='spt_scale'||k==='polf')return v.toFixed(2);
