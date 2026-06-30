@@ -152,38 +152,71 @@
     .plotcard canvas{height:300px;min-height:0;flex:none}
   }
   a{color:var(--accent)}
+
+  /* cross-page navigation */
+  .nav{display:flex;align-items:center;gap:4px;padding:9px 30px;background:#0b1018;
+    border-bottom:1px solid var(--line);font-size:13px;flex-wrap:wrap}
+  .nav .brand{font-weight:700;margin-right:12px;color:var(--ink)}
+  .nav a{text-decoration:none;color:var(--muted);padding:6px 12px;border-radius:8px;
+    transition:all .14s}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:rgba(245,167,107,.16);color:var(--crowd);font-weight:700}
+
+  /* supporting equations under the two main ODEs */
+  .eqsub{margin-top:11px;padding-top:11px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--muted);line-height:1.8}
+  .eqsub b{color:var(--ink)}
+  .eqsub .m{font-size:12.5px}
+  .term.leak{border-left:3px solid var(--crowd)}
 </style>
 </head>
 <body>
+<nav class="nav">
+  <span class="brand">🦊🐰 BIOMOD</span>
+  <a href="index.html">Home</a>
+  <a href="model_explorer.html">Dilute model</a>
+  <a href="crowding_explorer.html" class="active">Crowded model</a>
+</nav>
 <header>
   <h1>🧪🦊🐰 Crowded Predator-Prey Explorer <span style="font-size:14px;color:var(--crowd);font-weight:600">· mechanistic</span></h1>
-  <p class="sub">The BIOMOD novelty layer. This runs the <b>full seven-species
+  <p class="sub">The BIOMOD novelty layer. This integrates the <b>full seven-species
   reaction network</b> (free prey N, predator P, template G, and the four
   enzyme/template complexes), and lets molecular crowding act on every elementary
   step through shared physics, <b>not</b> by multiplying lumped rate constants by
-  hand. Turn up the crowder and watch the oscillation respond. The two ODEs below
-  are the reduced read-out; the <span style="color:var(--crowd)">amber</span>
-  constants are the ones crowding moves:</p>
+  hand. These are the actual mass-action equations the page solves; prey N and
+  predator P bind and release the template and the shared exonuclease, and the
+  <span style="color:var(--crowd)">amber</span> rate constants are the ones
+  crowding moves:</p>
 
   <div class="eqcard">
     <div class="eqrow">
-      <span class="eqlhs">🐰 Prey, change per min</span><span class="eqeq">=</span>
-      <span class="term growth"><b>＋ growth on template</b>
-        <span class="m"><span class="frac"><span class="num"><span class="cr">k</span><sub>1</sub> pol G N</span><span class="den">1 + <span class="cr">b</span> G N</span></span></span></span>
-      <span class="op">−</span>
-      <span class="term eat"><b>eaten by predators</b>
-        <span class="m"><span class="cr">k</span><sub>2</sub> pol N P</span></span>
-      <span class="op">−</span>
-      <span class="term death"><b>chewed up (death)</b>
-        <span class="m"><span class="frac"><span class="num">rec <span class="cr">k</span><sub>N</sub> N</span><span class="den">1 + P/<span class="cr">K</span><sub>m,P</sub></span></span></span></span>
+      <span class="eqlhs">🐰 dN/dt</span><span class="eqeq">=</span>
+      <span class="term growth"><b>with template G (grow)</b>
+        <span class="m">−<span class="cr">k</span><sub>on,NG</sub> N G + <span class="cr">k</span><sub>off,NG</sub> C<sub>NG</sub> + 2<span class="cr">k</span><sub>cat,g</sub> C<sub>NG</sub></span></span>
+      <span class="term eat"><b>with predator P</b>
+        <span class="m">−<span class="cr">k</span><sub>on,NP</sub> N P + <span class="cr">k</span><sub>off,NP</sub> C<sub>NP</sub></span></span>
+      <span class="term death"><b>with exonuclease E</b>
+        <span class="m">−<span class="cr">k</span><sub>on,eN</sub> N E + <span class="cr">k</span><sub>off,eN</sub> C<sub>NE</sub></span></span>
+      <span class="term leak"><b>leak</b>
+        <span class="m">+ λ<sub>N</sub></span></span>
     </div>
     <div class="eqrow">
-      <span class="eqlhs">🦊 Predator, change per min</span><span class="eqeq">=</span>
-      <span class="term born"><b>＋ born from eating prey</b>
-        <span class="m"><span class="cr">k</span><sub>2</sub> pol N P</span></span>
-      <span class="op">−</span>
-      <span class="term death"><b>chewed up (death)</b>
-        <span class="m"><span class="frac"><span class="num">rec <span class="cr">k</span><sub>P</sub> P</span><span class="den">1 + P/<span class="cr">K</span><sub>m,P</sub></span></span></span></span>
+      <span class="eqlhs">🦊 dP/dt</span><span class="eqeq">=</span>
+      <span class="term born"><b>with prey N (replicate)</b>
+        <span class="m">−<span class="cr">k</span><sub>on,NP</sub> N P + <span class="cr">k</span><sub>off,NP</sub> C<sub>NP</sub> + 2<span class="cr">k</span><sub>cat,p</sub> C<sub>NP</sub></span></span>
+      <span class="term death"><b>with exonuclease E</b>
+        <span class="m">−<span class="cr">k</span><sub>on,eP</sub> P E + <span class="cr">k</span><sub>off,eP</sub> C<sub>PE</sub></span></span>
+      <span class="term leak"><b>leak</b>
+        <span class="m">+ λ<sub>P</sub></span></span>
+    </div>
+    <div class="eqsub">
+      <b>Complexes</b> evolve by mass action, e.g.
+      <span class="m">Ċ<sub>NG</sub> = <span class="cr">k</span><sub>on,NG</sub> N G − (<span class="cr">k</span><sub>off,NG</sub> + <span class="cr">k</span><sub>cat,g</sub>) C<sub>NG</sub></span>,
+      and likewise C<sub>NP</sub>, C<sub>NE</sub>, C<sub>PE</sub>.
+      &nbsp;<b>Conservation</b>: G<sub>tot</sub> = G + C<sub>NG</sub>, &nbsp;
+      E = rec − C<sub>NE</sub> − C<sub>PE</sub> (the shared exonuclease — the saturable oscillation engine).
+      &nbsp;<span style="color:var(--faint)">Under fast-binding QSSA these seven equations collapse to the paper's reduced
+      two-variable form shown on the <a href="model_explorer.html">Dilute model</a> page.</span>
     </div>
   </div>
 

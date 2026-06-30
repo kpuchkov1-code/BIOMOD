@@ -136,9 +136,24 @@
     .plotcard canvas{height:300px;min-height:0;flex:none}
   }
   a{color:var(--accent)}
+
+  /* cross-page navigation */
+  .nav{display:flex;align-items:center;gap:4px;padding:9px 30px;background:#0b1018;
+    border-bottom:1px solid var(--line);font-size:13px;flex-wrap:wrap}
+  .nav .brand{font-weight:700;margin-right:12px;color:var(--ink)}
+  .nav a{text-decoration:none;color:var(--muted);padding:6px 12px;border-radius:8px;
+    transition:all .14s}
+  .nav a:hover{background:var(--panel2);color:var(--ink)}
+  .nav a.active{background:rgba(139,156,255,.16);color:var(--accent);font-weight:700}
 </style>
 </head>
 <body>
+<nav class="nav">
+  <span class="brand">🦊🐰 BIOMOD</span>
+  <a href="index.html">Home</a>
+  <a href="model_explorer.html" class="active">Dilute model</a>
+  <a href="crowding_explorer.html">Crowded model</a>
+</nav>
 <header>
   <h1>🦊🐰 Fujii Predator-Prey Model Explorer (dilute)</h1>
   <p class="sub">An interactive version of the BIOMOD dry-lab model: the Fujii &amp;
