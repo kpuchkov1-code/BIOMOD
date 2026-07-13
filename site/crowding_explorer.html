@@ -269,7 +269,12 @@
   <div class="chan">
     <div class="chip"><span class="dot" style="background:var(--cycle)"></span>
       <b class="ev">Excluded volume</b><span class="arr">→</span> tighter binding
-      <span class="ev">↑ k₁ k₂ b</span>, <span class="ev">↓ Km,P</span></div>
+      <span class="ev">↑ k₁ k₂ b</span>, <span class="ev">↓ Km,P</span>
+      <span class="arr" style="font-weight:400;opacity:.7">(size only)</span></div>
+    <div class="chip"><span class="dot" style="background:#8b7bd8"></span>
+      <b style="color:#8b7bd8">Chemical identity</b><span class="arr">→</span>
+      PEG water activity, Ficoll enthalpic
+      <span style="color:#8b7bd8">separates PEG vs Ficoll</span></div>
     <div class="chip"><span class="dot" style="background:var(--accent)"></span>
       <b class="vi">Viscosity</b><span class="arr">→</span> slower diffusion
       <span class="vi">↓ on-rates</span></div>
@@ -426,11 +431,15 @@ const POL_REF=3.7;                 // reference polymerase used in the eff-const
 const SBIND=0.2;                   // binding slowdown for in-browser integration
 
 // crowder library (literature-anchored). c_exo, c_polnick = catalytic slopes.
+// chi = enthalpic preferential-interaction coeff, k_aw = water-activity slope --
+// the two CHEMICAL-IDENTITY channels that separate PEG from Ficoll beyond size.
 const CROWDERS={
   PEG8000:{label:'PEG 8000',kind:'coil',M:8000,v_bar:0.83,R_c:3.4,R_h:2.5,
-    monomer_M:44,visc_a:0.78,visc_b:1.61,c_polnick:3.0,c_exo:10.3,spt_scale:1.0},
+    monomer_M:44,visc_a:0.78,visc_b:1.61,c_polnick:3.0,c_exo:10.3,spt_scale:1.0,
+    chi:0.0,k_aw:0.90},   // near-ideal (chi~0); strong osmolyte (large k_aw)
   FICOLL400:{label:'Ficoll 400',kind:'sphere',M:400000,v_bar:0.67,R_c:10.0,R_h:10.0,
-    monomer_M:350,visc_a:1.0,visc_b:2.5,c_polnick:2.0,c_exo:5.0,spt_scale:1.0},
+    monomer_M:350,visc_a:1.0,visc_b:2.5,c_polnick:2.0,c_exo:5.0,spt_scale:1.0,
+    chi:0.35,k_aw:0.25},  // enthalpic/excluded (chi>0); weak osmolyte (small k_aw)
 };
 
 // ----- live state ------------------------------------------------------------
@@ -456,10 +465,18 @@ function sptMuEx(r,phi,cr){
   const z=r/cr.R_c, Q=phi/(1-phi);
   return cr.spt_scale*(-Math.log(1-phi)+(3*z+3*z*z+z*z*z)*Q);
 }
-function dGassoc(rA,rB,rAB,phi,cr){
+function dGassoc(rA,rB,rAB,phi,cr){   // hard-core excluded volume (entropic)
   return sptMuEx(rAB,phi,cr)-sptMuEx(rA,phi,cr)-sptMuEx(rB,phi,cr);
 }
-function waterDG(phi,nw){return nw*(-0.6*phi);}
+const R_SURF_REF=1.0;
+function dGenth(rA,rB,rAB,phi,cr){    // enthalpic preferential-interaction (chi)
+  const dArea=(rAB*rAB-rA*rA-rB*rB)/(R_SURF_REF*R_SURF_REF);
+  return (cr.chi||0)*phi*dArea;
+}
+function waterDG(phi,nw,cr){          // water activity, crowder-specific k_aw
+  const kaw=(cr&&cr.k_aw!=null)?cr.k_aw:0.6;
+  return nw*(-kaw*phi);
+}
 function overlapWt(cr){
   const NA=6.022e23, Rg=cr.R_c*1e-7;
   return (3*cr.M/(4*Math.PI*NA*Rg*Rg*Rg))*100;
@@ -480,11 +497,12 @@ function diffFactor(wt,cr,rA,rB){return 1/viscFactor(wt,cr,Math.max(rA,rB));}
 // ----- elementary constants (physical; no de-stiffen) ------------------------
 function elemPhysical(wt,cr,polf){
   const e=Object.assign({},ELEM0);
-  e.kcat_g*=polf; e.kcat_p*=polf;
+  e.kcat_g*=polf; e.kcat_p*=polf; e.leakScale=1;
   if(wt>0){
     const phi=volFraction(wt,cr);
     const assoc=(kon0,koff0,rA,rB,rAB,nw)=>{
-      const dG=dGassoc(rA,rB,rAB,phi,cr)+waterDG(phi,nw);
+      // three thermodynamic channels: excluded volume + enthalpic + hydration
+      const dG=dGassoc(rA,rB,rAB,phi,cr)+dGenth(rA,rB,rAB,phi,cr)+waterDG(phi,nw,cr);
       const K=(kon0/koff0)*Math.exp(-dG);
       const kon=kon0*diffFactor(wt,cr,rA,rB);
       return [kon,kon/K];
@@ -495,6 +513,7 @@ function elemPhysical(wt,cr,polf){
     [e.kon_eP,e.koff_eP]=assoc(ELEM0.kon_eP,ELEM0.koff_eP,RADII.P,RADII.Exo,RADII.C_PE,0.0);
     const fpol=Math.exp(cr.c_polnick*phi), fexo=Math.exp(-cr.c_exo*phi);
     e.kcat_g*=fpol; e.kcat_p*=fpol; e.kcat_eN*=fexo; e.kcat_eP*=fexo;
+    e.leakScale=fpol;   // leak is the same polymerase, so it rides the pol factor
   }
   return e;
 }
@@ -515,6 +534,7 @@ function effectiveConstants(e,G){
 //   y = [N, P, Gf, C_NG, C_NP, C_NE, C_PE]
 function simulate(e,rec,leakN,leakP,G,dt,T){
   dt=dt||0.004; T=T||1600;
+  const lsc=e.leakScale||1; leakN*=lsc; leakP*=lsc;  // crowding-scaled background
   const steps=Math.round(T/dt), CAP=1e7;
   let N=ST.N0,P=ST.P0,Gf=G,cNG=0,cNP=0,cNE=0,cPE=0,blew=false;
   const kgNG=e.kon_NG,kfNG=e.koff_NG,kcg=e.kcat_g,

@@ -263,8 +263,9 @@ heading("2.1  What each symbol means", 2)
 bullet("free prey and predator strands. These are the two populations we plot.",
        "N, P:  ")
 bullet("the free template strand that prey is copied on.", "G:  ")
-bullet("the free exonuclease (ttRecJ), the single enzyme that degrades both "
-       "prey and predator.", "E:  ")
+bullet("the free exonuclease (ttRecJ or its mesophilic equivalent RecJf, still "
+       "being decided by the team), the single enzyme that degrades both prey "
+       "and predator.", "E:  ")
 bullet("a complex, meaning two molecules currently bound together. For example "
        "C_{NG} is one prey strand stuck to the template, and C_{PE} is a "
        "predator strand held by the enzyme.",
@@ -273,9 +274,12 @@ bullet("the on-rate (how fast two molecules bind), the off-rate (how fast a "
        "complex falls back apart), and the catalytic rate (how fast a bound "
        "complex does its chemistry). The superscript names which pair it "
        "belongs to.", "k_{on}, k_{off}, k_{cat}:  ")
-bullet("a small constant background synthesis of prey and predator (a 'leak'). "
-       "It is tiny next to the roughly 130 nM swings but it keeps the rhythm "
-       "from collapsing (Section 8).", "lambda_N, lambda_P:  ")
+bullet("a small template-independent background synthesis of prey and predator "
+       "(a 'leak'). This is not mass from nowhere: the polymerase builds these "
+       "strands de novo from the dNTP fuel supplied in the buffer, exactly as it "
+       "does for templated growth. It is tiny next to the roughly 130 nM swings "
+       "but it keeps the rhythm from collapsing (Section 8).",
+       "lambda_N, lambda_P:  ")
 bullet("the total exonuclease and total template put into the tube (fixed "
        "numbers, not variables).", "rec, G_{tot}:  ")
 
@@ -294,7 +298,8 @@ bullet("prey binds and unbinds the predator, because the predator uses prey as "
        "With predator:  ")
 bullet("prey binds and unbinds the exonuclease before being cut "
        "(-k_{on}^{eN}NE + k_{off}^{eN}C_{NE}).", "With the enzyme:  ")
-bullet("the small constant background (+lambda_N).", "Leak:  ")
+bullet("the small template-independent background synthesis, built by the "
+       "polymerase from the dNTP fuel pool (+lambda_N).", "Leak:  ")
 body("The predator equation dP/dt reads the same way: it binds and unbinds prey "
      "and replicates (+2k_{cat}^{p}C_{NP}, each event making two predator "
      "strands), binds and unbinds the enzyme (-k_{on}^{eP}PE + k_{off}^{eP}"
@@ -326,13 +331,20 @@ body("Crowding is summarised by the volume fraction phi that the crowder "
      "occupies, set by its weight concentration C and specific volume v-bar:")
 omath(r"\varphi = \bar{v}\,\frac{C}{100}")
 body("Every rate constant above is then the dilute value times physics that "
-     "depends only on phi, the crowder size, and the molecules' sizes. For each "
-     "binding step, the binding strength (equilibrium constant K) and the "
-     "on-rate change as:")
-omath(r"K(\varphi) = K^{0}\,\exp\!\left(-\frac{\Delta\Delta G_{EV}}{RT}\right), "
+     "depends only on phi, the crowder size and chemical identity, and the "
+     "molecules' sizes. Importantly, we do not assume the tube is at equilibrium: "
+     "the model integrates the full kinetics above, and a binding strength K "
+     "appears only as the ratio k_{on}/k_{off} of a single reversible step, which "
+     "crowding shifts. For each binding step that shift comes from three "
+     "thermodynamic channels, and the on-rate slows by viscosity:")
+omath(r"K(\varphi) = K^{0}\,\exp\!\left(-\frac{\Delta\Delta G_{EV}"
+      r"+\Delta\Delta G_{enth}+\Delta\Delta G_{hyd}}{RT}\right), "
       r"\quad k_{on}(\varphi)=\frac{k_{on}^{0}}{\eta_{eff}}, "
       r"\quad k_{off}=\frac{k_{on}}{K}")
-body("where the excluded-volume free energy that strengthens binding is")
+body("The first channel is hard-core excluded volume (a size and shape effect, "
+     "the same for any inert crowder); the second and third are what make two "
+     "crowders of the same volume fraction differ by chemistry, not just size "
+     "(Section 6.3):")
 omath(r"\frac{\Delta\Delta G_{EV}}{RT} = \mu_{ex}(r_{AB}) - \mu_{ex}(r_A) - \mu_{ex}(r_B)")
 body("and the catalytic constants shift by enzyme class (polymerase and nickase "
      "up, exonuclease down):")
@@ -369,7 +381,8 @@ body("The system (Fujii and Rondelez, 2013) is three short DNA species and "
      "three enzymes in a buffer. Prey N copies itself on a template G with the "
      "help of a polymerase and a nicking enzyme. Predator P copies itself using "
      "prey N as its template, consuming prey in the process. A single "
-     "exonuclease (ttRecJ) degrades both prey and predator. Because the "
+     "exonuclease (ttRecJ, or the mesophilic RecJf the team may use instead) "
+     "degrades both prey and predator. Because the "
      "predator lags the prey, the two populations chase each other up and down "
      "in a sustained oscillation, exactly like foxes and rabbits.")
 body("The published description, after simplification, is two equations for the "
@@ -492,12 +505,43 @@ body("A binding on-rate then slows in proportion to 1/eta_eff at the size of "
      "like Ficoll has no mesh, so it uses the hard-sphere (Mooney) law instead:")
 omath(r"\frac{\eta}{\eta_0}=\exp\left[\frac{[\eta]\,\varphi}{1-\varphi/\varphi_{max}}\right]")
 
-heading("6.3  Smaller effects (kept secondary)", 2)
-body("Crowding also lowers the activity of water and can sequester buffer "
-     "ions, both of which nudge DNA pairing. For the short strands here these "
-     "are modest corrections, so they are included but kept small; the ion "
-     "channel is switched off by default because our buffer uses magnesium, "
-     "whereas the available data are for sodium.")
+heading("6.3  Chemical identity: what separates PEG from Ficoll beyond size", 2)
+body("Section 6.1 is purely a size and shape effect: it is identical for any "
+     "inert crowder and can only tell PEG and Ficoll apart through their radii. "
+     "That is not enough. PEG and Ficoll are chemically different molecules, and "
+     "we carry that difference through two further channels layered on top of "
+     "excluded volume.")
+body("First, a preferential-interaction (enthalpic) term. A crowder that is "
+     "preferentially pushed away from the DNA and protein surfaces pays a "
+     "free-energy cost set by the exposed surface area; because binding buries "
+     "surface, such a crowder stabilises the bound state on top of pure excluded "
+     "volume. We write it as")
+omath(r"\frac{\Delta\Delta G_{enth}}{RT} = \chi\,\varphi\,"
+      r"\frac{r_{AB}^{2}-r_A^{2}-r_B^{2}}{r_{ref}^{2}}")
+body("where chi carries the crowder's chemical identity. Ficoll, a hydrophilic "
+     "polysucrose, is the more strongly excluded (enthalpic) crowder, so it gets "
+     "a positive chi and a stabilisation that does not scale with its (small, "
+     "large-sphere) excluded-volume term. PEG is close to ideal toward DNA, so "
+     "its chi is near zero.")
+body("Second, water activity. Crowding lowers the activity of water, which favours "
+     "the more compact, water-releasing bound state. This is where PEG's own "
+     "chemistry enters: PEG is a strong osmolyte and depresses water activity "
+     "sharply, whereas Ficoll barely perturbs it. We use a crowder-specific slope "
+     "k_{aw}:")
+omath(r"\frac{\Delta\Delta G_{hyd}}{RT} = n_{w}\,\ln a_{w}, \qquad "
+      r"\ln a_{w} \approx -k_{aw}\,\varphi")
+body("So the two crowders are now separated by chemistry through complementary "
+     "routes: PEG mainly through its strong water-activity depression, Ficoll "
+     "mainly through its preferential-exclusion (enthalpic) term. chi and k_{aw} "
+     "are literature-anchored but tunable, to be pinned by the wet-lab PEG versus "
+     "Ficoll comparison.")
+body("A third small effect, sequestration of buffer ions, is deliberately left "
+     "switched off rather than quietly folded in. It would need a divalent "
+     "(magnesium) treatment because every enzyme and the whole buffer are "
+     "magnesium-based, whereas the available data and the simple formula are for "
+     "sodium, and we have no measured crowder to magnesium binding constant. It "
+     "is kept in the code as a clearly labelled, disabled option for a future "
+     "sensitivity check; it contributes nothing to any prediction here.")
 
 # =============================================================================
 # 7. HOW CROWDING MOVES EACH CONSTANT
@@ -533,11 +577,14 @@ bullet("a single factor of 0.8 multiplies the catalytic constants. The quick "
        "temporarily inside the complexes; tracking that bound pool slightly "
        "slows the cycle, and this factor restores the measured period.",
        "Timescale (0.8).  ")
-bullet("a tiny constant background synthesis (lambda_N about 0.02, lambda_P "
-       "about 0.006 nM per minute), a documented feature of this enzyme "
-       "toolbox, lifts the populations off zero. Without it the predator can "
-       "fall to exactly zero and never recover; with it the oscillation is "
-       "robust, as seen in experiment.", "Leak.  ")
+bullet("a tiny template-independent background synthesis (lambda_N about 0.02, "
+       "lambda_P about 0.006 nM per minute), a documented feature of this enzyme "
+       "toolbox in which the polymerase builds strands de novo from the dNTP "
+       "fuel, lifts the populations off zero. Without it the predator can fall to "
+       "exactly zero and never recover; with it the oscillation is robust, as "
+       "seen in experiment. Because it is the same polymerase acting, this "
+       "background speeds up under crowding along with templated growth rather "
+       "than staying fixed.", "Leak.  ")
 body("Result at zero crowder: period 90 minutes, predator swinging from about "
      "22 up to 154 nM, a strong steady oscillation, matching the published "
      "behaviour.")
@@ -558,22 +605,23 @@ if os.path.exists(fig2):
     doc.add_picture(fig2, width=Inches(6.4))
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
 body("Figure 2. Period (left) and predator wave size (right) versus crowder "
-     "concentration. PEG 8000 drives the wave size to zero near 10 to 12 "
+     "concentration. PEG 8000 drives the wave size to zero near 9 to 11 "
      "percent (the oscillation stops); Ficoll 400 keeps oscillating throughout.",
      italic=True, size=9)
 make_table(
     ["Condition", "Period (min)", "Predator wave (nM)", "Oscillating?"],
     [["Dilute (no crowder)", "90", "132", "yes, strong"],
-     ["5 percent PEG 8000", "78", "76", "yes"],
-     ["8 percent PEG 8000", "73", "19", "yes, near the edge"],
+     ["5 percent PEG 8000", "74", "56", "yes"],
+     ["8 percent PEG 8000", "72", "8", "yes, near the edge"],
      ["About 11 percent PEG 8000", "stops", "about 0", "no, waves switch off"],
-     ["16 percent Ficoll 400", "69", "38", "yes, still going"]],
+     ["16 percent Ficoll 400", "68", "28", "yes, still going"]],
     widths=[2.1, 1.3, 1.6, 1.7])
 body("The three testable claims for the wet lab: (1) crowding shortens the "
-     "period; (2) PEG 8000 switches the oscillation off near 10 to 12 percent; "
+     "period; (2) PEG 8000 switches the oscillation off near 9 to 11 percent; "
      "(3) at the same volume fraction, Ficoll 400 is far milder and keeps the "
      "oscillation alive. The third claim, the same packing giving opposite "
-     "outcomes for two crowders, is the novel and falsifiable result.")
+     "outcomes for two crowders, is the novel and falsifiable result, and it now "
+     "rests on chemistry (Section 6.3), not size alone.")
 
 # =============================================================================
 # 10. SIMPLER VERSION
@@ -605,7 +653,15 @@ bullet("polymerase and nickase are plentiful and folded into the catalytic "
 bullet("fast intermediate folding states are not tracked (assumed quick).",
        "Intermediates.  ")
 bullet("the strength of the exonuclease slowdown is taken from a related enzyme "
-       "(Exonuclease I), not ttRecJ itself.", "Enzyme data.  ")
+       "(Exonuclease I), not the RecJ-family enzyme itself. This is a good match "
+       "if the team uses RecJf, since it too is an E. coli exonuclease.",
+       "Enzyme data.  ")
+bullet("the operating temperature and the exonuclease identity (ttRecJ versus "
+       "the mesophilic RecJf) are exposed as single settings rather than baked "
+       "into the model. The crowding physics is written in temperature-scaled "
+       "units and is essentially temperature-independent; the dilute baseline is "
+       "fixed from the published data at about 46 degrees, so moving to a cooler "
+       "protocol would require re-fitting that baseline.", "Conditions.  ")
 bullet("the excluded-volume radii, the viscosity constants, the catalytic "
        "slopes, and the leak size are all literature-anchored but tunable. The "
        "qualitative story (period shortens, PEG switches off, Ficoll milder) is "
@@ -633,6 +689,12 @@ refs = [
     "11:9025. The scale-dependent viscosity law. [abs]",
     "Knowles et al. (2011). Separating excluded volume from preferential "
     "interactions. PNAS 108:12699. Excluded-volume stabilisation of duplexes. [full]",
+    "Timasheff (1998). Control of protein stability by weak interactions with "
+    "solvent components. Adv Protein Chem 51:355. Preferential-interaction "
+    "(enthalpic) term. [2]",
+    "Sung and Nesbitt (2011, and related single-molecule work). PEG is near-ideal "
+    "toward DNA folding while Ficoll and dextran contribute enthalpic "
+    "interactions. Basis for loading chi onto Ficoll, not PEG. [abs]",
     "Zhou, Rivas and Minton (2008). Macromolecular crowding. Annu Rev Biophys "
     "37:375. Scaled-particle excluded-volume theory. [full]",
     "Minton (2001). The influence of macromolecular crowding. J Biol Chem "
