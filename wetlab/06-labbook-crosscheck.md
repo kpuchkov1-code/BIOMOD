@@ -32,7 +32,7 @@ Audrey's lab book (pages 148 to 155, dated 24 August) independently reproduces t
 | Item | I had | Lab book | |
 | --- | --- | --- | --- |
 | **DTT** | 1 mM | **4 mM** | Lab book wins, corrected throughout |
-| **ET SSB** | about 100 nM | **5 mg/L (5 ug/mL)** | Lab book wins, concrete figure |
+| **ET SSB** | about 100 nM, flagged undecided | **5 mg/L (5 ug/mL)** | Lab book wins, and it is Fujii's reagent |
 | **Template G** | 140 nM | **160 nM** | Lab book wins for the bench |
 | **Prey N** | 5 nM | **10 nM** | Lab book wins |
 | **Predator P** | 5 nM | **30 nM** | Lab book wins |

@@ -50,7 +50,9 @@ Ranked by how badly each one would hurt and how cheap it is to check first.
 
 **4. The 5x volume scale-up is unexamined.** Going from 20 uL to 100 uL changes the surface-to-volume ratio, which changes enzyme adsorption onto plastic, evaporation rate, and time to reach temperature. No one has worked this through. The concentrations in the table below are Fujii's, unchanged; only the volumes scale.
 
-**5. ET SSB is in the buffer but not in the model.** It coats single-stranded DNA, which is exactly what crowding acts on, and it is known to modulate RecJ-family exonuclease activity. If we use it, the model has a gap. If we omit it, we deviate from Fujii. Worth deciding deliberately rather than by default.
+**5. ET SSB may blunt the very effect we are measuring. Phase 2 concern only.** Resolved 25 September: ET SSB is Fujii's own reagent, listed in his SI among the components added at assembly, so using it is fidelity rather than deviation. It needs no model term either, because Table S5's rate constants were measured with it present and already absorb its effect.
+
+What remains is narrower. SSB coats single-stranded DNA, and single-stranded DNA is where crowding acts hardest on this network, so SSB may damp the crowding response. Keep the baseline faithful and settle it later with a plus/minus SSB pair at one PEG concentration.
 
 **6. We have PEG but no Ficoll.** Confirmed 25 September. The molecular weight of the PEG is still unconfirmed, and the model's headline result is calculated for PEG **8000** specifically, so that needs checking on the bottle.
 

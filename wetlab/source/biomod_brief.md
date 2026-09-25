@@ -141,7 +141,9 @@ Ranked by how badly each one would hurt and how cheap it is to check first.
 
 **4. The 5x volume scale-up is unexamined.** Going from 20 uL to 100 uL changes the surface-to-volume ratio, which changes enzyme adsorption onto plastic, evaporation rate, and time to reach temperature. No one has worked this through. The concentrations in the table below are Fujii's, unchanged; only the volumes scale.
 
-**5. ET SSB is in the buffer but not in the model.** It coats single-stranded DNA, which is exactly what crowding acts on, and it is known to modulate RecJ-family exonuclease activity. If we use it, the model has a gap. If we omit it, we deviate from Fujii. Worth deciding deliberately rather than by default.
+**5. ET SSB may blunt the very effect we are measuring. Phase 2 concern only.** Resolved 25 September: ET SSB is Fujii's own reagent, listed in his SI among the components added at assembly, so using it is fidelity rather than deviation. It needs no model term either, because Table S5's rate constants were measured with it present and already absorb its effect.
+
+What remains is narrower. SSB coats single-stranded DNA, and single-stranded DNA is where crowding acts hardest on this network, so SSB may damp the crowding response. Keep the baseline faithful and settle it later with a plus/minus SSB pair at one PEG concentration.
 
 **6. We have PEG but no Ficoll.** Confirmed 25 September. The molecular weight of the PEG is still unconfirmed, and the model's headline result is calculated for PEG **8000** specifically, so that needs checking on the bottle.
 
@@ -176,7 +178,7 @@ Read the Source column before you pipette. Values marked **SI** were quoted dire
 | Synperonic F108 | 0.1 % | Surfactant, prevents surface loss | VERIFY |
 | Netropsin | 2 uM | Suppresses non-specific amplification | VERIFY |
 | EvaGreen | 1x | Predator reporter | VERIFY |
-| ET SSB | 5 ug/mL | Single-strand binding | CONFIRMED (lab book) |
+| ET SSB | 5 ug/mL | Single-strand binding | CONFIRMED (lab book + Fujii SI) |
 | Bst polymerase | 3.7 nM | Extension | **SI** |
 | Nb.BsmI nickase | 600 U/mL | Nicking | **SI** |
 | ttRecJ exonuclease | 32.5 nM | Degradation | **SI** |
@@ -259,11 +261,17 @@ The dye is attached to the template, not to prey. When prey hybridises to the te
 
 This is the component we changed, and it is the project's biggest unforced risk. See the risks section.
 
-**ET SSB, around 100 nM. Undecided.** Extreme Thermostable Single-Stranded DNA Binding protein coats single strands, stops them folding into hairpins or mispairing, and improves polymerase processivity.
+**ET SSB, 5 ug/mL. Use it. This is Fujii's, not ours.** Extreme Thermostable Single-Stranded DNA Binding protein coats single strands, stops them folding into hairpins or mispairing, and improves polymerase processivity. NEB supplies it at 500 ug/mL, so 1 uL into a 100 uL well gives 5 ug/mL exactly, which is the lab book figure.
 
-The problem is that it does its job by binding exactly the thing two other parts of the system care about. **ttRecJ is a single-strand-specific exonuclease**, so SSB and ttRecJ compete for the same substrate, and SSB is documented to modulate RecJ-family activity directly. Separately, single-stranded DNA is precisely where crowding exerts most of its effect on this network, so coating it changes what we are trying to measure.
+Fujii's SI lists ET SSB alongside BSA and DTT as the components held out of the 4x buffer stock and added at assembly time. **Leaving it out would be the deviation**, not putting it in.
 
-So: include it and the model has an unrepresented interaction sitting right on the death arm. Omit it and we have deviated from Fujii in a second place. Either is defensible. What is not defensible is deciding it by accident, which is the current position.
+There is a real mechanistic tension here, and it is worth understanding rather than worrying about. SSB does its job by binding exactly what two other parts of the system care about: **ttRecJ is a single-strand-specific exonuclease**, so SSB and ttRecJ compete for the same substrate, and SSB is documented to modulate RecJ-family activity directly.
+
+That competition is not a problem to be avoided. Fujii ran the system with SSB present and got clean 90-minute oscillations, so it is already part of the published behaviour we are reproducing.
+
+**It also means SSB needs no separate term in the model.** The rate constants in SI Table S5 were measured in a buffer that contained SSB, so its effect is already absorbed into k1, k2, kN and kP. There is no gap.
+
+The genuinely open question is a phase 2 one. Single-stranded DNA is where crowding exerts most of its effect on this network, and SSB is sitting on it. So SSB may blunt the crowding response we are trying to measure. That is not a reason to change the baseline; it is a reason to run a clean side experiment later, plus and minus SSB at one PEG concentration, once the dilute cycle works.
 
 ## The three enzymes
 
@@ -344,7 +352,7 @@ Assumes a 4x buffer stock holding the salts, magnesium, dNTPs, Synperonic, netro
 | 4x reaction buffer | 4x | 25.0 uL | Tris, salts, MgSO4, dNTPs, Synperonic, netropsin, EvaGreen at 1x |
 | BSA | 10 mg/mL | 1.0 uL | 100 ug/mL |
 | DTT | 100 mM | 1.0 uL | 1 mM |
-| ET SSB | 500 ng/uL | 1.0 uL | If used, see the decision above |
+| ET SSB | 500 ug/mL | 1.0 uL | 5 ug/mL, Fujii's own figure |
 | Bst polymerase | see note below | TBD | 3.7 nM |
 | Nb.BsmI | 10,000 U/mL | 6.0 uL | 600 U/mL |
 | ttRecJ | Paris aliquot, 1/160 dilution | 1.0 uL | 1 % v/v, the Galas working dilution |
@@ -560,7 +568,7 @@ Audrey's lab book (pages 148 to 155, dated 24 August) independently reproduces t
 | Item | I had | Lab book | |
 | --- | --- | --- | --- |
 | **DTT** | 1 mM | **4 mM** | Lab book wins, corrected throughout |
-| **ET SSB** | about 100 nM | **5 mg/L (5 ug/mL)** | Lab book wins, concrete figure |
+| **ET SSB** | about 100 nM, flagged undecided | **5 mg/L (5 ug/mL)** | Lab book wins, and it is Fujii's reagent |
 | **Template G** | 140 nM | **160 nM** | Lab book wins for the bench |
 | **Prey N** | 5 nM | **10 nM** | Lab book wins |
 | **Predator P** | 5 nM | **30 nM** | Lab book wins |
@@ -804,7 +812,6 @@ Seven things to close. The first three block the experiment; the rest block the 
 - [ ] **Test the AF594 signal** in a single well with labelled template alone, before committing a full run. Confirm the 610-10 filter returns usable counts off a 617 nm emitter.
 - [ ] **Confirm the molecular weight of the PEG we hold.** If it is not 8000, the model's excluded-volume term needs re-deriving. Not needed for the reproduction run, which has no crowder in it.
 - [ ] **Order Ficoll 400**, on a timescale, not urgently. Confirmed 25 September: we have PEG, we do not have Ficoll. Irrelevant to phase 1 but it is the comparison arm of the whole project, so it needs ordering with lead time rather than discovering late. See the note below.
-- [ ] **Decide on ET SSB.** In the buffer and out of the model, or out of both. Either is defensible; the current state is neither.
 - [ ] **Aliquot the dNTPs** into single-run volumes to avoid repeated freeze-thaw. The tube holds enough for two or three runs.
 
 ## Sources
