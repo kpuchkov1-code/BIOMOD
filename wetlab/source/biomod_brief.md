@@ -597,9 +597,32 @@ The model runs at **G = 140 nM**; the bench will run at **160 nM**. Template con
 
 # BENCH PROTOCOL
 
-Every concentration and volume, in the order you do them. Reconciled with the lab book, so the numbers here are the lab book's numbers except where noted.
+Every concentration and volume, in the order you do them. Reconciled with the lab book, so the numbers here are the lab book's except where noted.
 
-One well is **100 uL = 90 uL master mix + 10 uL combined oligo stock**.
+## The whole thing on one page
+
+One reaction well is always:
+
+```
+  90 uL  master mix     everything except the DNA
++ 10 uL  oligo mix      the three strands, premixed at 10x
+---------
+ 100 uL  reaction
+```
+
+Seven stages. The first three are preparation you do once and then never again; the last four are the run itself.
+
+| Stage | What | How often |
+| --- | --- | --- |
+| **1** | Component stocks: salts, buffers, dye | Once, lasts the project |
+| **2** | 4x reaction buffer, 500 uL | Once per few runs |
+| **3** | Oligo stocks, ending in one 10x oligo mix | **Once, then never again** |
+| **4** | Master mix, 700 uL, enzymes last | Fresh every run |
+| **5** | Load the plate | Every run |
+| **6** | Run: 45 C, 12 h | Every run |
+| **7** | Crowder layout | **Phase 2 only. Skip this for now.** |
+
+Stages 1 to 3 are an afternoon of preparation. Once they are done, a run is stages 4 to 6 and takes about forty minutes of hands-on work.
 
 ## Stage 1: Component stocks, make once
 
@@ -626,7 +649,7 @@ Synperonic dissolves badly. Add 5 g to 40 mL cold water, cover, leave in the fri
 
 Water first, EvaGreen last. Keep on ice and protect from light once the dye is in.
 
-| # | Add | From | Volume | Gives at 4x | at 1x |
+| # | Component | Stock | Volume | At 4x | At 1x |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Nuclease-free water | | **112.3 uL** | | |
 | 2 | Tris-HCl pH 8.8 | 1.5 M | **26.7 uL** | 80 mM | 20 mM |
@@ -642,7 +665,37 @@ Water first, EvaGreen last. Keep on ice and protect from light once the dye is i
 
 ## Stage 3: Oligo stocks
 
-**3a. Primary stocks, 100 uM.** IDT delivered amounts are confirmed, so these are exact. Let the tubes reach room temperature, spin them down before opening, then add:
+### Read this before the tables
+
+The DNA goes through three tubes before it reaches a well, and it is easy to confuse them. Here is the whole path:
+
+```
+   IDT dry tube
+        |  add water, once
+        v
+1.  TUBE STOCK, 100 uM          one tube per strand, the archive.
+        |                        You touch this twice, then it lives
+        |                        in the freezer.
+        v
+2.  WORKING DILUTION, 10 uM     N and P only. Exists purely because
+        |                        1 uL is too small to pipette well.
+        v
+3.  OLIGO MIX, 10x              ALL THREE STRANDS IN ONE TUBE.
+        |                        1000 uL, made once.
+        |  10 uL per well        >>> THIS is what you pipette at
+        v                        >>> the bench, and nothing else.
+     the well
+```
+
+**The volumes in the tables below (16 uL, 10 uL, 30 uL) are used exactly once**, on the day you make the oligo mix. After that they never appear again. At the bench you pipette **10 uL of the finished oligo mix** into each reaction well, and that single number is the only oligo volume you ever handle again.
+
+**Why it is called 10x.** 10 uL of the mix goes into a 100 uL well, so it gets diluted tenfold on the way in. The mix therefore has to hold every strand at ten times its final concentration. G ends up at 160 nM in the well, so the mix carries it at 1600 nM, which is 1.6 uM. Same logic for the other two.
+
+**Why make 1000 uL when a run only needs 30.** Deliberately. It is about twenty runs' worth, and making it once means **every experiment for the rest of the project uses identically concentrated DNA**. That removes a whole class of run-to-run variation from your results at the cost of one afternoon. Split it into aliquots so you never thaw the whole thing.
+
+### 3a. Tube stocks, 100 uM
+
+IDT delivered amounts are confirmed, so these are exact. Let the tubes reach room temperature, spin them down before opening, then add:
 
 | Strand | IDT delivered | Add water | Gives | Covers |
 | --- | --- | --- | --- | --- |
@@ -656,29 +709,38 @@ Vortex, stand 15 minutes, vortex again. Template G is the limiting strand at rou
 
 Store all three at -20 C. **Wrap G in foil.**
 
-**3b. Intermediate stocks for N and P.** The lab book pipettes 1 uL and 3 uL straight from the 100 uM primary. That is below reliable delivery and it is the largest error source in the chain. Do this instead:
+### 3b. Working dilutions, 10 uM, N and P only
+
+G is not diluted here. It goes into the mix straight from its tube stock, because 16 uL is a perfectly good volume to pipette.
 
 | Strand | Make | How |
 | --- | --- | --- |
-| N | 10 uM | 10 uL primary + 90 uL water |
-| P | 10 uM | 10 uL primary + 90 uL water |
+| N | 10 uM | 10 uL of the 100 uM tube stock + 90 uL water |
+| P | 10 uM | 10 uL of the 100 uM tube stock + 90 uL water |
 
-**3c. Combined 10x oligo stock, 1000 uL.**
+These exist for one reason. Going straight from 100 uM would mean pipetting 1.6 uL of N and 4.8 uL of P into the mix, and a P2 at the bottom of its range is the single largest error source in this whole chain. One extra dilution step removes it.
 
-| Add | From | Volume | Gives in 10x stock | Gives in well |
+### 3c. The oligo mix, 1000 uL at 10x
+
+All three strands, one tube. Make this once.
+
+| Add | From | Volume | In the mix | In the well |
 | --- | --- | --- | --- | --- |
-| Template G | 100 uM | **16 uL** | 1.6 uM | **160 nM** |
-| Prey N | 10 uM | **10 uL** | 0.1 uM | **10 nM** |
-| Predator P | 10 uM | **30 uL** | 0.3 uM | **30 nM** |
+| Template G | 100 uM tube stock | **16 uL** | 1.6 uM | **160 nM** |
+| Prey N | 10 uM working dilution | **10 uL** | 0.1 uM | **10 nM** |
+| Predator P | 10 uM working dilution | **30 uL** | 0.3 uM | **30 nM** |
 | Nuclease-free water | | **944 uL** | | |
+| **Total** | | **1000 uL** | | |
 
-Split into 5 aliquots of 200 uL and store at -20 C in foil. Each aliquot covers 20 wells.
+Split into **5 aliquots of 200 uL**, store at -20 C wrapped in foil, and thaw one at a time. Each aliquot is 20 wells, so roughly six runs.
+
+> **At the bench, from here on: 10 uL of this mix per reaction well.** That is the only oligo volume in the rest of the protocol. The 16, 10 and 30 above are finished with.
 
 ## Stage 4: Master mix
 
 For **700 uL**, enough for the six master-mix wells plus generous excess. Enzymes last, straight from the freezer block, mix by gentle inversion only.
 
-| # | Add | From | Per 100 uL well | For 700 uL | Final in well |
+| # | Component | Stock | Per well | For 700 uL | Final |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Nuclease-free water | | 51.25 uL | **398.6 uL** | |
 | 2 | 4x reaction buffer | 4x | 25 uL | **194.4 uL** | 1x |
@@ -698,7 +760,7 @@ For **700 uL**, enough for the six master-mix wells plus generous excess. Enzyme
 
 Preheat the POLARstar to **45 C at least 40 minutes beforehand**.
 
-| Wells | Add first | Then add | Purpose |
+| Wells | Add first | Then add | What it tells you |
 | --- | --- | --- | --- |
 | **A1-A3** | 25 uL 4x buffer | 75 uL water | Optical baseline, plate and buffer noise |
 | **B1-B3** | 90 uL master mix | 10 uL water | Enzyme autofluorescence, DNA contamination |
