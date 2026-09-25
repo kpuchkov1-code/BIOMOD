@@ -24,7 +24,17 @@ document for anyone who would rather read it that way.
 
 ## Current status
 
-**Nothing blocks a first run.** The protocol is complete and every reagent
+**Phase 1 is reproduction, not crowding.** The first run contains no PEG and
+no Ficoll — it is the plain Fujii oscillator in dilute buffer, and the target
+is a clean ~90 minute cycle. Stage 7 of the protocol is the crowder layout and
+you skip it entirely for now.
+
+That ordering is deliberate rather than cautious. If the dilute cycle does not
+run, nothing measured under crowding means anything. YOKABIO spent most of
+their project getting the baseline circuit working and still placed 3rd.
+Expect several attempts.
+
+**Nothing blocks that first run.** The protocol is complete and every reagent
 needed for it is in hand.
 
 Confirmed and settled:
@@ -63,7 +73,8 @@ None of these stop you starting.
 
 - [ ] **Neat ttRecJ stock concentration** from Jean-Christophe Galas, in nM or mg/mL. Only needed to give the model a molar number - the 1 percent working dilution is his lab's own calibration and is correct as written.
 - [ ] **POLARstar filter list**, to confirm AF594 (emits ~617 nm) can actually be read. Worth checking before spending one of two nickase runs finding out.
-- [ ] **Which PEG the lab holds**, and whether there is any Ficoll 400 at all. PEG versus Ficoll is the entire experiment.
+- [ ] **Molecular weight of the PEG we hold.** The model's numbers are for PEG 8000 specifically. Check the bottle.
+- [ ] **Order Ficoll 400.** Confirmed 25 September: we have PEG, no Ficoll. Irrelevant to phase 1, but PEG alone gives a concentration series rather than the PEG-versus-Ficoll comparison the project's claim rests on. Ordinary catalogue reagent, so order it with lead time.
 - [ ] **Provenance of G 160 nM, N 10 nM, P 30 nM.** Not Fujii's numbers. Template concentration is the main bifurcation parameter, so it matters whether these were chosen or inherited.
 - [ ] **Bst molar concentration** for the M0275 lot. Still specified as 0.75 percent v/v with no molar anchor. Polymerase is usually in excess, so this is the least urgent item here.
 

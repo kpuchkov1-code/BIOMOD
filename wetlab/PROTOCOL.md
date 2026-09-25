@@ -152,7 +152,8 @@ Seven things to close. The first three block the experiment; the rest block the 
 - [ ] **Ask Galas for the neat ttRecJ stock concentration**, in nM or mg/mL. Not a blocker: the 1 percent dilution is his lab's own calibration and can be used as written. This is only needed to give the model a molar number.
 - [ ] **Resolve Bst units to nM**, either from NEB technical support for the M0275 lot, or by adopting a volume-fraction spec and recording it explicitly.
 - [ ] **Test the AF594 signal** in a single well with labelled template alone, before committing a full run. Confirm the 610-10 filter returns usable counts off a 617 nm emitter.
-- [ ] **Confirm which PEG the lab has** and whether Ficoll 400 is available at all. If the PEG is not 8000, the model's excluded-volume term needs re-deriving. If there is no Ficoll, the central comparison has nothing to compare against.
+- [ ] **Confirm the molecular weight of the PEG we hold.** If it is not 8000, the model's excluded-volume term needs re-deriving. Not needed for the reproduction run, which has no crowder in it.
+- [ ] **Order Ficoll 400**, on a timescale, not urgently. Confirmed 25 September: we have PEG, we do not have Ficoll. Irrelevant to phase 1 but it is the comparison arm of the whole project, so it needs ordering with lead time rather than discovering late. See the note below.
 - [ ] **Decide on ET SSB.** In the buffer and out of the model, or out of both. Either is defensible; the current state is neither.
 - [ ] **Aliquot the dNTPs** into single-run volumes to avoid repeated freeze-thaw. The tube holds enough for two or three runs.
 

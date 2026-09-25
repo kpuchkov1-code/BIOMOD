@@ -143,7 +143,11 @@ Ranked by how badly each one would hurt and how cheap it is to check first.
 
 **5. ET SSB is in the buffer but not in the model.** It coats single-stranded DNA, which is exactly what crowding acts on, and it is known to modulate RecJ-family exonuclease activity. If we use it, the model has a gap. If we omit it, we deviate from Fujii. Worth deciding deliberately rather than by default.
 
-**6. The crowders are not yet specified.** Ellie has PEG, but which molecular weight was never confirmed, and Ficoll was never confirmed as available at all. The model's headline result is calculated for PEG 8000 and Ficoll 400. Without Ficoll there is nothing to compare PEG against, and the falsifiable claim evaporates.
+**6. We have PEG but no Ficoll.** Confirmed 25 September. The molecular weight of the PEG is still unconfirmed, and the model's headline result is calculated for PEG **8000** specifically, so that needs checking on the bottle.
+
+This does not affect phase 1 at all. The reproduction run contains no crowder, so neither polymer is needed to start.
+
+It does matter for the project as a whole, because the falsifiable claim is that PEG stops the clock and Ficoll does not. **PEG alone gives a concentration series, not a comparison.** A PEG-only result is still a real finding, but it cannot separate excluded volume from chemistry, which is the interesting part. Ficoll 400 is an ordinary catalogue reagent, so this is a purchasing lead-time problem rather than a scientific one. Put it on an order list now and it will not be a problem in November.
 
 **7. dNTP supply caps the number of runs.** The lab tube holds 200 uL of 10 mM dNTP mix. At 80 uL per 500 uL of 4x buffer stock that is two or three runs before reordering. Aliquot it now to avoid repeated freeze-thaw.
 
@@ -736,7 +740,8 @@ Seven things to close. The first three block the experiment; the rest block the 
 - [ ] **Ask Galas for the neat ttRecJ stock concentration**, in nM or mg/mL. Not a blocker: the 1 percent dilution is his lab's own calibration and can be used as written. This is only needed to give the model a molar number.
 - [ ] **Resolve Bst units to nM**, either from NEB technical support for the M0275 lot, or by adopting a volume-fraction spec and recording it explicitly.
 - [ ] **Test the AF594 signal** in a single well with labelled template alone, before committing a full run. Confirm the 610-10 filter returns usable counts off a 617 nm emitter.
-- [ ] **Confirm which PEG the lab has** and whether Ficoll 400 is available at all. If the PEG is not 8000, the model's excluded-volume term needs re-deriving. If there is no Ficoll, the central comparison has nothing to compare against.
+- [ ] **Confirm the molecular weight of the PEG we hold.** If it is not 8000, the model's excluded-volume term needs re-deriving. Not needed for the reproduction run, which has no crowder in it.
+- [ ] **Order Ficoll 400**, on a timescale, not urgently. Confirmed 25 September: we have PEG, we do not have Ficoll. Irrelevant to phase 1 but it is the comparison arm of the whole project, so it needs ordering with lead time rather than discovering late. See the note below.
 - [ ] **Decide on ET SSB.** In the buffer and out of the model, or out of both. Either is defensible; the current state is neither.
 - [ ] **Aliquot the dNTPs** into single-run volumes to avoid repeated freeze-thaw. The tube holds enough for two or three runs.
 
