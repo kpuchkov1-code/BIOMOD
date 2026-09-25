@@ -1,9 +1,25 @@
-# BIOMOD dry-lab — pre-wet-lab deliverables
+# BIOMOD 2026 — Fujii predator–prey oscillator under crowding
 
-In-silico work for the Fujii & Rondelez (2013, *ACS Nano*) DNA predator–prey
-oscillator, ahead of crowding experiments. Everything here runs on a laptop —
-**no wet lab required** — and is the Step 1–4 work dry lab can finish before the
-bench starts.
+Imperial College London, BIOMOD 2026. Reproducing the Fujii & Rondelez (2013,
+*ACS Nano*) DNA predator–prey oscillator and asking what macromolecular
+crowding does to it.
+
+| Directory | What it holds |
+|-----------|---------------|
+| **[`wetlab/`](wetlab/README.md)** | **The bench protocol, reagents, plate layout and reagent budget.** Start at [`wetlab/PROTOCOL.md`](wetlab/PROTOCOL.md). |
+| [`crowding/`](crowding/README.md) | The seven-species mechanistic crowding model and its write-up. |
+| (root) | The paper-exact two-variable model and its validation. |
+
+> **Model/bench divergence:** the model runs **G = 140 nM**; the bench will run
+> **160 nM**. Template concentration is the main bifurcation parameter, so the
+> predicted Hopf threshold will shift. Re-run at 160 nM before quoting model
+> numbers against wet-lab data.
+
+## Dry lab
+
+In-silico work ahead of the crowding experiments. Everything below runs on a
+laptop — **no wet lab required** — and is the Step 1–4 work dry lab can finish
+before the bench starts.
 
 ## What's here
 
