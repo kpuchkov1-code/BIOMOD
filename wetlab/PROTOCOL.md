@@ -46,7 +46,7 @@ Stages 1 to 3 are an afternoon of preparation. Once they are done, a run is stag
 | NaCl | 1 M, 50 mL | 2.9222 g | Room temp |
 | MgSO4 heptahydrate | 1 M, 50 mL | 12.324 g | Room temp |
 | Synperonic F108 | 10 % w/v, 50 mL | 5 g, dissolve cold overnight | 4 C |
-| Netropsin | 0.8 mM, 12.4 mL | all 5 mg, aliquot | -20 C, **foil** |
+| Netropsin | 0.8 mM, 12.4 mL | all 5 mg, 12 aliquots, steps below | -20 C, **foil** |
 | BSA | 10 mg/mL, 10 mL | 0.1 g | -20 C |
 | DTT | 100 mM | as supplied | -20 C, Ellis fridge stock |
 | dNTP mix | 10 mM each | as supplied, **aliquot now** | -20 C |
@@ -56,6 +56,36 @@ Stages 1 to 3 are an afternoon of preparation. Once they are done, a run is stag
 Titrate the Tris **at room temperature**. It reads about 0.55 units lower at 45 C and you must not correct for that.
 
 Synperonic dissolves badly. Add 5 g to 40 mL cold water, cover, leave in the fridge overnight, warm to room temperature, then top up to 50 mL.
+
+### Netropsin, 0.8 mM, 12 aliquots
+
+Read the vial label before you weigh anything. The 12.4 mL below assumes **netropsin
+dihydrochloride, MW 503.4**, which is what Sigma ships as N6635. A different salt form
+has a different molecular weight and needs a different volume, so recompute it rather
+than trusting the number here.
+
+Netropsin is light-sensitive and it is a DNA binder. Gloves, and keep it out of the light
+from the moment the vial is open.
+
+1. **Let the vial reach room temperature** before opening it, then spin it down briefly so
+   none of the powder is sitting in the cap. It is 5 mg in total and you cannot afford to
+   lose any of it on a lid.
+2. **Dissolve in the vial, not in a fresh tube.** Add 1 mL of nuclease-free water directly
+   to the supplied vial and pipette gently to dissolve. Transferring dry powder loses
+   material on the tube wall; dissolving in place does not.
+3. **Rinse the vial twice** with 1 mL of water each time, carrying each rinse into a 15 mL
+   foil-wrapped tube along with the first millilitre. This is the step that decides whether
+   you get 0.8 mM or something 10 percent lower.
+4. **Top up to 12.4 mL** with nuclease-free water. That gives 0.8 mM. Invert to mix, and do
+   not vortex hard.
+5. **Split into 12 aliquots of about 1 mL** in amber or foil-wrapped tubes. Label each one
+   `Netropsin 0.8 mM` with the date.
+6. **Store at -20 C, wrapped in foil.** Thaw one tube at a time and keep the other eleven
+   untouched.
+
+Each 500 uL batch of 4x buffer takes 5 uL, so a single 1 mL aliquot covers far more buffer
+than this project will ever make. The 12 tubes are a freeze-thaw safeguard, not a supply
+calculation: the point is that you never thaw the whole 12.4 mL.
 
 ## Stage 2: 4x reaction buffer, 500 uL
 
@@ -75,66 +105,127 @@ Water first, EvaGreen last. Keep on ice and protect from light once the dye is i
 | 10 | EvaGreen | 20x | **100 uL** | 4x | 1x |
 | | **Total** | | **500 uL** | | |
 
+**Store the finished buffer at -20 C, wrapped in foil, split into 5 aliquots of 100 uL.**
+Each aliquot is 4 wells. Three of the ten components do not tolerate being left in the
+fridge or repeatedly thawed: the dNTPs degrade slowly, and both EvaGreen and netropsin
+are light-sensitive. Aliquoting means a run thaws 100 uL rather than putting the whole
+batch through another freeze-thaw cycle.
+
+**The dNTPs cap how many batches you can make.** One batch takes 80 uL of the 200 uL
+dNTP tube, so the tube is 2.5 batches, about 50 wells. Reordering dNTPs is the quiet
+prerequisite for a third batch.
+
 ## Stage 3: Oligo stocks
 
-### Read this before the tables
-
-The DNA goes through three tubes before it reaches a well, and it is easy to confuse them. Here is the whole path:
+One afternoon, nineteen steps, done once for the whole project. The DNA passes through
+three tubes before it reaches a well:
 
 ```
    IDT dry tube
         |  add water, once
         v
-1.  TUBE STOCK, 100 uM          one tube per strand, the archive.
-        |                        You touch this twice, then it lives
-        |                        in the freezer.
+   TUBE STOCK, 100 uM           one per strand. Made and drawn from on
+        |                       one afternoon, then it lives in the freezer.
         v
-2.  WORKING DILUTION, 10 uM     N and P only. Exists purely because
-        |                        1 uL is too small to pipette well.
+   WORKING DILUTION, 10 uM      N and P only. Exists purely because 1.6 uL
+        |                       is too small to pipette accurately.
         v
-3.  OLIGO MIX, 10x              ALL THREE STRANDS IN ONE TUBE.
-        |                        1000 uL, made once.
-        |  10 uL per well        >>> THIS is what you pipette at
-        v                        >>> the bench, and nothing else.
-     the well
+   OLIGO MIX, 1000 uL at 10x    ALL THREE STRANDS IN ONE TUBE.
+        |                       Made once. About twenty runs.
+        |  10 uL per well       >>> THIS is what you pipette at the bench,
+        v                       >>> and nothing else.
+      the well
 ```
 
-**The volumes in the tables below (16 uL, 10 uL, 30 uL) are used exactly once**, on the day you make the oligo mix. After that they never appear again. At the bench you pipette **10 uL of the finished oligo mix** into each reaction well, and that single number is the only oligo volume you ever handle again.
+### Before you start
 
-**Why it is called 10x.** 10 uL of the mix goes into a 100 uL well, so it gets diluted tenfold on the way in. The mix therefore has to hold every strand at ten times its final concentration. G ends up at 160 nM in the well, so the mix carries it at 1600 nM, which is 1.6 uM. Same logic for the other two.
+Out on the bench: about **1.7 mL of nuclease-free water** decanted into a working tube,
+fresh pre-racked tips, a minifuge, a vortex, and roughly fifteen labelled 1.5 mL tubes.
+Read the note on tips and water at the end of this stage first if nobody has.
 
-**Why make 1000 uL when a run only needs 30.** Deliberately. It is about twenty runs' worth, and making it once means **every experiment for the rest of the project uses identically concentrated DNA**. That removes a whole class of run-to-run variation from your results at the cost of one afternoon. Split it into aliquots so you never thaw the whole thing.
+Two rules that hold throughout:
 
-### 3a. Tube stocks, 100 uM
+- **A fresh tip for every strand, every time.** The stocks are 100 uM and the well needs
+  10 to 160 nM, so a trace of one strand in another's tube is a large contamination.
+- **Only one oligo tube open at a time.** Three open tubes of 100 uM DNA side by side is
+  how strands end up in each other.
 
-IDT delivered amounts are confirmed, so these are exact. Let the tubes reach room temperature, spin them down before opening, then add:
+**Do not freeze anything until step 19.** Everything the dilutions and the mix need is
+withdrawn from the primaries on the same afternoon they are made, so the primaries are
+frozen once, at the end, and never thawed again unless you remake the mix.
 
-| Strand | IDT delivered | Add water | Gives | Covers |
+| Strand | IDT delivered | Water to add | Gives | Covers |
 | --- | --- | --- | --- | --- |
-| **G** template | 10.3 nmol | **103 uL** | 100 uM | about 640 wells |
 | **N** prey | 28.6 nmol | **286 uL** | 100 uM | about 28,000 wells |
 | **P** predator | 14.5 nmol | **145 uL** | 100 uM | about 4,800 wells |
+| **G** template | 10.3 nmol | **103 uL** | 100 uM | about 640 wells |
 
-Vortex, stand 15 minutes, vortex again. Template G is the limiting strand at roughly 640 wells, which is still around 60 full plates. The oligos are not a constraint.
+### The nineteen steps
 
-**Aliquot the primaries before freezing them.** Split G into five tubes of about 20 uL, N and P into four or five each. Freeze-thawing a single tube repeatedly over the next two months is the realistic way to lose them, and G is both the limiting strand and the one carrying the dye.
+1. **Bring all three IDT tubes to room temperature** before opening anything. A cold tube
+   pulls condensation out of the air and onto the dried pellet.
+2. **Spin all three down**, a few seconds in a minifuge or 30 seconds at 3,000 g. IDT ships
+   a dried film that is often loose in the cap and is invisible. Opening an unspun tube is
+   the commonest way to lose part of a strand before you start.
+3. **N first: add 286 uL of water** onto the pellet rather than down the wall. Cap, vortex
+   20 to 30 seconds. N is the strand to make your mistakes on, at 28,000 wells.
+4. **Then P: add 145 uL.** Cap, vortex 20 to 30 seconds.
+5. **Then G: add 103 uL.** Cap, vortex 20 to 30 seconds, and drape foil over it. G is both
+   the limiting strand and the one carrying the dye, so it goes last, once your hands know
+   the sequence.
+6. **Stand all three for 15 minutes** at room temperature. The strands are 10 to 22 nt and
+   need no heating. Do not warm G.
+7. **Vortex each again, then spin each briefly** to bring droplets down from the cap and
+   walls. That spin is part of the measurement: volume left in the cap is strand missing
+   from your concentration. All three are now 100 uM.
+8. **Withdraw 16 uL of G** into a fresh tube and label it `G for mix`. Fresh tip.
+9. **Withdraw 10 uL of N** into a fresh tube. Fresh tip.
+10. **Withdraw 10 uL of P** into a fresh tube. Fresh tip.
+11. **Add 90 uL of water to the 10 uL of N**, giving 100 uL at 10 uM. Vortex.
+12. **Add 90 uL of water to the 10 uL of P**, giving 100 uL at 10 uM. Vortex.
+13. **Put 944 uL of water into a fresh 1.5 mL tube.** This becomes the oligo mix, so water
+    goes in first.
+14. **Add the three strands to it:** 16 uL of G from step 8, 10 uL of the N dilution, and
+    30 uL of the P dilution. That is 1000 uL total.
+15. **Vortex the mix, spin briefly, and keep it covered.** This tube is now the only oligo
+    volume in the rest of the protocol.
+16. **Split the mix into 5 aliquots of 200 uL.** Each is 20 wells, about six runs.
+17. **Split what is left of G, about 87 uL, into 4 or 5 tubes of roughly 20 uL.** One
+    aliquot is exactly one future mix, so no G tube is ever refrozen.
+18. **Put the N and P primaries into one tube each,** or two if you want insurance against
+    dropping one. The leftover 10 uM dilutions go into one tube each as well.
+19. **Label every tube** with strand, concentration and date, label the box too, and
+    **freeze everything at -20 C.** Put the G aliquots and the mix in one opaque box.
 
-Store all three at -20 C. **Wrap G in foil.**
+### The tubes you end up with
 
-### 3b. Working dilutions, 10 uM, N and P only
+Have about **sixteen 1.5 mL tubes** labelled before you start. Thirteen to fifteen of them
+go into the freezer at step 19; the rest are working tubes you throw away the same day.
 
-G is not diluted here. It goes into the mix straight from its tube stock, because 16 uL is a perfectly good volume to pipette.
+| Tube | Contents | Concentration | Volume | Write on it | Store |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Water, decanted to work from | | ~1.7 mL | `NF water` | Discard |
+| 2 | G, resuspended, for the mix | 100 uM | 16 uL | `G for mix` | Used up at step 14 |
+| 3 | Mixing tube for the oligo mix | 10x | 1000 uL | `OLIGO MIX 10x <date>` | Emptied at step 16 |
+| 4 to 8 | **Oligo mix aliquots** | **10x** | **5 x 200 uL** | `OLIGO MIX 10x <date> 1/5` to `5/5` | **-20 C, opaque box** |
+| 9 to 12 | **G primary aliquots** | **100 uM** | **4 x ~22 uL** | `G 100uM <date>` | **-20 C, foil or opaque box** |
+| 13 | **N primary** | **100 uM** | **276 uL** | `N 100uM <date>` | **-20 C** |
+| 14 | **P primary** | **100 uM** | **135 uL** | `P 100uM <date>` | **-20 C** |
+| 15 | N working dilution, leftover | 10 uM | 90 uL | `N 10uM <date>` | -20 C |
+| 16 | P working dilution, leftover | 10 uM | 70 uL | `P 10uM <date>` | -20 C |
 
-| Strand | Make | How |
-| --- | --- | --- |
-| N | 10 uM | 10 uL of the 100 uM tube stock + 90 uL water |
-| P | 10 uM | 10 uL of the 100 uM tube stock + 90 uL water |
+Tubes 13 and 14 can simply be the original IDT tubes, relabelled. Split them in two if you
+want insurance against dropping one. Tube 3 can be one of the five mix aliquots if you would
+rather not use a sixth tube.
 
-These exist for one reason. Going straight from 100 uM would mean pipetting 1.6 uL of N and 4.8 uL of P into the mix, and a P2 at the bottom of its range is the single largest error source in this whole chain. One extra dilution step removes it.
+**Write the concentration on every tube, not just the strand.** The one label that can ruin
+a run is `N`, because there are two N tubes in the freezer at 100 uM and 10 uM and they
+differ tenfold. The same goes for P. A tube marked only with a strand letter is an ambiguous
+tube, and the ambiguity surfaces three weeks later when somebody else is at the bench.
 
-### 3c. The oligo mix, 1000 uL at 10x
+Label the box as well as the tubes. Marker rubs off a frosted cap in a gloved hand.
 
-All three strands, one tube. Make this once.
+### The volumes, as a table
 
 | Add | From | Volume | In the mix | In the well |
 | --- | --- | --- | --- | --- |
@@ -144,9 +235,81 @@ All three strands, one tube. Make this once.
 | Nuclease-free water | | **944 uL** | | |
 | **Total** | | **1000 uL** | | |
 
-Split into **5 aliquots of 200 uL**, store at -20 C wrapped in foil, and thaw one at a time. Each aliquot is 20 wells, so roughly six runs.
+> **At the bench, from here on: 10 uL of this mix per reaction well.** That is the only
+> oligo volume in the rest of the protocol. The 16, 10 and 30 above are finished with.
 
-> **At the bench, from here on: 10 uL of this mix per reaction well.** That is the only oligo volume in the rest of the protocol. The 16, 10 and 30 above are finished with.
+### Why it is done this way
+
+**Why the mix is called 10x.** 10 uL goes into a 100 uL well, so it is diluted tenfold on
+the way in and has to carry every strand at ten times its final concentration. G ends up at
+160 nM in the well, so the mix holds it at 1600 nM.
+
+**Why make 1000 uL when a run needs 30.** It is about twenty runs, and making it once means
+every experiment for the rest of the project uses identically concentrated DNA. That
+removes a whole class of run-to-run variation for the cost of one afternoon.
+
+**Why N and P get diluted but G does not.** Going straight from 100 uM would mean pipetting
+1.6 uL of N and 4.8 uL of P, and a P2 at the bottom of its range is the single largest error
+source in this chain. G's 16 uL is a perfectly good volume, so G skips the step. Both
+dilutions are single-use intermediates, not stocks: the mix takes 10 and 30 uL, so 90 and
+70 uL are left over. Keep them, but they are not precious.
+
+**Why aliquot sizes differ.** Aliquoting buys one thing, which is not thawing a tube you
+are not using. So the mix, which you open every run, is split five ways; the N and P
+primaries, which you may never open again, are not. Splitting everything five ways is five
+times the labelling for no benefit.
+
+**Why G is the exception.** Not freeze-thaw. Template concentration is the model's main
+bifurcation parameter, there is an unresolved 140 versus 160 nM discrepancy against the
+model, and a G titration would mean several separate mixes and so several separate
+withdrawals. Matching one 20 uL aliquot to one mix means each of those costs a fresh tube
+rather than a thaw.
+
+**What the premade mix costs you.** It fixes the N:P:G ratio. That is the right trade for a
+crowding study, where crowder percentage is the only thing varying between wells. But
+varying one strand independently later means a new mix, not an adjustment to this one.
+
+**On foil.** AF594 is one of the more photostable dyes and foil is not strictly needed for a
+15 minute stand under room lighting. Keep G off a sunlit bench, and drape foil over it
+anyway so nobody has to make the judgement call on the afternoon it gets left out for three
+hours. The photobleaching that actually threatens this experiment happens in the well, at
+160 nM, under the reader's excitation across a 12 hour run.
+
+**Do not quantify the strands.** IDT's delivered nmol is reliable, and on G the AF594
+absorbance contaminates an A260 reading, so a nanodrop number would be worse than trusting
+the label.
+
+### A note on tips and water
+
+**Sterile and nuclease-free are two different certifications and you want the second one.**
+Sterility means no viable microbes, which this reaction does not care about. Nuclease-free
+means certified free of DNase and RNase, which it does. Autoclaving delivers the first and
+not reliably the second, so an autoclaved tip is not automatically a safe tip.
+
+In practice: fresh tips from a sealed, pre-racked box are fine, and almost all pre-racked
+tips from the major brands are certified both. Loose tips from an open bulk bag are
+certified neither, and a bag that people have had their hands in is the one thing to avoid.
+Filter tips are worth using for the 100 uM stocks, to keep aerosol out of the pipette
+barrel.
+
+**The bigger risk is not nucleases, it is the strands contaminating each other,** which is
+why the fresh-tip rule above is absolute rather than advisory. A trace of P in the N tube
+would change the circuit's dynamics and look like a failed experiment rather than a
+pipetting error.
+
+**Decant the water** you are going to use into a separate tube and work from that, rather
+than putting a tip into the stock bottle repeatedly. One careless tip contaminates the
+bottle, and nothing afterwards will tell you it happened.
+
+Milli-Q is acceptable for the netropsin stock, which is a small molecule nucleases cannot
+touch. Use certified nuclease-free water here in Stage 3, where the strands are DNA sitting
+in a freezer for two months, and remember that G's phosphorothioate linkages protect it
+from exonucleases only. An endonuclease would still cut it.
+
+**Total water for Stage 3: about 1,658 uL,** or 1.7 mL, being 534 uL for the tube stocks,
+180 uL for the working dilutions and 944 uL for the mix. Buy 5 mL and there is room to
+remake the mix once.
+
 
 ## Stage 4: Master mix
 
