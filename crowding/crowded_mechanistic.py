@@ -94,41 +94,47 @@ from scipy.integrate import solve_ivp
 
 
 # =============================================================================
-# 0. OPERATING CONDITIONS + ENZYME SET  (team-configurable -- still undecided)
+# 0. OPERATING CONDITIONS + ENZYME SET  (CONFIRMED by the team, 2026-07-27)
 # =============================================================================
-# The operating temperature and the exonuclease identity are ONE coupled decision
-# the team has not finalised (see project memory). They are exposed here as knobs
-# rather than baked into scattered constants, so switching is a one-line change and
-# nothing downstream needs re-deriving by hand.
+# Team decision: exonuclease = ttRecJ (thermostable); instrument = BMG POLARstar
+# Omega in STANDARD config, ceiling 45 C (not the 65 C extended config). Both
+# knobs stay exposed here (one-line change) in case either is revisited.
 #
-#   T_C  -- operating temperature (deg C). Set by the SHORT-STRAND DNA Tm design,
-#           NOT by enzyme optima. The Fujii/PEN predator-prey and the YOKABIO 2025
-#           reference team both run isothermal ~46 C for ~12 h. IMPORTANT / honest
-#           scope: T_C is RECORDED here (it sets RT for reporting) but it does NOT
-#           by itself re-tune the predictions, and that is deliberate. The crowding
-#           free energies (SPT excluded volume, enthalpic, hydration) are all
-#           expressed in units of RT and are, being ENTROPIC/excluded-volume terms,
-#           intrinsically ~T-independent when written that way -- correct physics.
-#           The genuinely T-dependent part is the DILUTE baseline (hybridisation Tm
-#           via van't Hoff, enzyme kcat via Arrhenius), which is EMPIRICALLY fixed
-#           at 46.5 C from Fujii SI Table S5. Moving the operating temperature
-#           therefore requires re-mapping that dilute baseline (van't Hoff/Arrhenius)
-#           -- a flagged TODO, not an automatic rescale. Do not read a T_C change as
-#           a validated re-tune.
-#   exo  -- shared exonuclease that drives the death step (the conserved, saturable
-#           engine of the oscillation). "ttRecJ" (T. thermophilus, thermostable,
-#           opt 50-70 C) or "RecJf" (NEB M0264, E. coli RecJ-MBP, mesophilic opt
-#           37 C). Same catalysis (5'->3' ssDNA-specific, Mg2+-dependent); they play
-#           the IDENTICAL mechanistic role, so this is a re-parameterisation, not a
-#           structural change. At 46 C RecJf is above its optimum and will slowly
-#           lose activity over a 12 h run (weakens the conserved-enzyme assumption);
-#           ttRecJ is thermostable there. Undecided -- toggle and compare.
-OPERATING = {"T_C": 46.5, "exo": "RecJf"}
+#   T_C  -- operating temperature (deg C). The Fujii/PEN predator-prey and the
+#           YOKABIO 2025 reference team both ran isothermal ~46 C, which is what
+#           the short strands were Tm-designed for and what the dilute baseline
+#           below (Fujii SI Table S5) was empirically fit at. The lab's actual
+#           ceiling is 45 C -- a real ~1.5 C shortfall against that design point,
+#           not just a reporting number. HONEST SCOPE: T_C is recorded here (sets
+#           RT) but does not by itself re-tune the predictions, and that is
+#           deliberate -- the crowding free energies (SPT excluded volume,
+#           enthalpic, hydration) are expressed in units of RT and are, being
+#           ENTROPIC/excluded-volume terms, intrinsically ~T-independent when
+#           written that way. So the PEG-vs-Ficoll divergence and Hopf-off %w/v
+#           are not expected to move much. What COULD move at 45 vs 46.5 C is the
+#           DILUTE baseline itself (hybridisation Tm via van't Hoff, enzyme kcat
+#           via Arrhenius) -- a 1.5 C gap is small (duplex K's shift by single-
+#           digit percent per Van't Hoff for short-strand Tm's in this range) and
+#           is left as a flagged refinement, not re-derived here. If the observed
+#           dilute period drifts from ~90 min at 45 C, re-map this baseline first
+#           before touching any crowding term.
+#   exo  -- shared exonuclease that drives the death step (the conserved,
+#           saturable engine of the oscillation). ttRecJ (T. thermophilus,
+#           thermostable, opt 50-70 C) is now the confirmed choice. At 45 C it
+#           sits below its optimum (turnover somewhat slower than at 60-70 C) but
+#           -- unlike the mesophilic RecJf alternative -- does not denature or
+#           lose activity over a 12 h isothermal run, so the conserved-enzyme
+#           assumption (E_tot = const) holds cleanly. This REMOVES the earlier
+#           caveat about enzyme drift; no re-mapping of the death-step constants
+#           is needed either, since REC/Km_P/Km_N/kcat_e* below were originally
+#           derived from Fujii's ttRecJ data in the first place.
+OPERATING = {"T_C": 45.0, "exo": "ttRecJ"}
 
 EXO_LIB = {
-    # rec_tot : total exonuclease (nM) -- the conserved species. Both default to
-    #           the Fujii ttRecJ mapping (32.5 nM); RecJf has no published PEN
-    #           mapping yet, so it inherits the same value flagged for wet-lab check.
+    # rec_tot : total exonuclease (nM) -- the conserved species. ttRecJ uses the
+    #           native Fujii SI mapping (32.5 nM). RecJf kept for reference only
+    #           (no longer the team's choice) -- inherits the same value, still
+    #           flagged as unmapped if ever revisited.
     # T_opt_C : catalytic temperature optimum (context for the T_C choice).
     # thermostable : holds activity across a 12 h isothermal run at T_C?
     "ttRecJ": {"rec_tot": 32.5, "T_opt_C": 60.0, "thermostable": True},
